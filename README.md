@@ -1,2 +1,2 @@
 # OMAI-Tools
-# Hier werden alle Online-Tools für die Vorlesung gehostet.
+Hier werden alle Online-Tools für die Vorlesung gehostet.
