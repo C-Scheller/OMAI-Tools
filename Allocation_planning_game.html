@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Allocation Planning Game</title>
-<meta name="description" content="Business game: allocate ten models to three plants and plan production quantities to make total production as high as possible.">
+<title>Network Planning Game</title>
+<meta name="description" content="Business game: add links between plants and models and plan production quantities so that total costs are as low as possible.">
 <meta name="theme-color" content="#005374">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -23,16 +23,17 @@
   --line-strong: #A9C0C9;
   --track: #E3ECEF;
   --fill: #0F77A0;
-  --zone: #CFE3EB;
   --init: #005374;
   --init-tint: #E2EEF3;
   --new: #1B7444;
   --new-tint: #E1F2E8;
   --on-ink: #FFFFFF;
   --on-sub: #D2E7EE;
-  --hatch: #D3E0E5;
   --ok: #1B7444;
   --ok-bg: #E1F2E8;
+  --warn: #A9530A;
+  --warn-fill: #D9822B;
+  --warn-bg: #FCEBDA;
   --danger: #BF311C;
   --danger-bg: #FBE6E2;
   --neutral-bg: #E3ECEF;
@@ -55,16 +56,17 @@
     --line-strong: #36667C;
     --track: #1B3E4B;
     --fill: #2E95BC;
-    --zone: #1F4D5E;
     --init: #1A6E90;
     --init-tint: #163A48;
     --new: #237A4C;
     --new-tint: #143A2A;
     --on-ink: #FFFFFF;
     --on-sub: #CFE6EE;
-    --hatch: #24495A;
     --ok: #62CD93;
     --ok-bg: #133A2A;
+    --warn: #F2A65A;
+    --warn-fill: #D9822B;
+    --warn-bg: #43301C;
     --danger: #FF7D69;
     --danger-bg: #45211B;
     --neutral-bg: #1B3E4B;
@@ -84,16 +86,17 @@
   --line-strong: #36667C;
   --track: #1B3E4B;
   --fill: #2E95BC;
-  --zone: #1F4D5E;
   --init: #1A6E90;
   --init-tint: #163A48;
   --new: #237A4C;
   --new-tint: #143A2A;
   --on-ink: #FFFFFF;
   --on-sub: #CFE6EE;
-  --hatch: #24495A;
   --ok: #62CD93;
   --ok-bg: #133A2A;
+  --warn: #F2A65A;
+  --warn-fill: #D9822B;
+  --warn-bg: #43301C;
   --danger: #FF7D69;
   --danger-bg: #45211B;
   --neutral-bg: #1B3E4B;
@@ -114,13 +117,8 @@ body {
 }
 button, input { font: inherit; color: inherit; }
 h1, h2, h3, p { margin: 0; }
-sub { font-size: .72em; line-height: 0; }
-.v { font-style: italic; white-space: nowrap; }
 :focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
-.sr-only {
-  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
-  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
-}
+.nowrap { white-space: nowrap; }
 
 .wrap {
   max-width: 1200px;
@@ -181,9 +179,7 @@ h2 { font-size: 1.25rem; line-height: 1.2; font-weight: 600; color: var(--ink); 
 .figures { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .fig { display: flex; flex-direction: column; min-width: 0; }
 .fig-label { font-size: .8125rem; color: var(--ink-3); line-height: 1.2; }
-.fig-value { font-size: 1.875rem; font-weight: 600; line-height: 1.1; letter-spacing: -0.01em; }
-.fig-value .unit { font-size: .875rem; font-weight: 400; color: var(--ink-3); letter-spacing: 0; margin-left: 4px; }
-.fig-sub { display: none; font-size: .875rem; color: var(--ink-2); }
+.fig-value { font-size: 1.75rem; font-weight: 600; line-height: 1.15; letter-spacing: -0.01em; white-space: nowrap; }
 
 .status { display: flex; align-items: center; gap: 8px; font-size: .9375rem; font-weight: 500; min-width: 0; }
 .status-icon {
@@ -200,7 +196,13 @@ h2 { font-size: 1.25rem; line-height: 1.2; font-weight: 600; color: var(--ink); 
 .status-long { display: none; }
 .issues { display: none; }
 
-.plants { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin-top: 8px; }
+.costs { margin: 4px 0 0; font-size: .8125rem; color: var(--ink-3); line-height: 1.35; }
+.costs b { font-weight: 600; color: var(--ink-2); }
+.costs .sep { margin: 0 4px; }
+.cost-table { display: none; }
+
+.plants-label { margin-top: 6px; font-size: .75rem; color: var(--ink-3); }
+.plants { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin-top: 2px; }
 .plant { min-width: 0; }
 .pl-top { display: flex; align-items: baseline; justify-content: space-between; gap: 6px; font-size: .8125rem; }
 .pl-name { font-weight: 600; color: var(--ink); white-space: nowrap; }
@@ -213,9 +215,8 @@ h2 { font-size: 1.25rem; line-height: 1.2; font-weight: 600; color: var(--ink); 
 .pl-cap { position: absolute; top: 0; bottom: 0; width: 2px; margin-left: -1px; background: var(--ink); display: none; }
 .plant.is-over .pl-cap { display: block; }
 .pl-sub { margin-top: 3px; font-size: .75rem; line-height: 1.3; color: var(--ink-3); }
-.pl-sub .loss { color: var(--danger); }
-.pl-sub .gain { color: var(--ok); }
-.pl-long { display: none; }
+.pl-sub .loss { color: var(--warn); }
+.long { display: none; }
 .panel-note { display: none; }
 
 /* ---------- Actions ---------- */
@@ -273,8 +274,7 @@ h2 { font-size: 1.25rem; line-height: 1.2; font-weight: 600; color: var(--ink); 
 .key-init { background: var(--init); }
 .key-new { background: var(--new); }
 .key-off { border: 1.5px dashed var(--line-strong); }
-.key-na { background: repeating-linear-gradient(135deg, var(--hatch) 0 2px, transparent 2px 5px); border: 1px solid var(--line); }
-.key-low { background: var(--danger); }
+.key-short { background: var(--warn-fill); }
 .legend .only-alloc, .legend .only-prod { display: none; }
 .plan[data-mode="alloc"] .legend .only-alloc { display: inline-flex; }
 .plan[data-mode="prod"] .legend .only-prod { display: inline-flex; }
@@ -299,13 +299,13 @@ h2 { font-size: 1.25rem; line-height: 1.2; font-weight: 600; color: var(--ink); 
 .cell { position: relative; min-width: 0; min-height: 56px; display: flex; }
 .c-plant { font-size: .75rem; font-weight: 600; line-height: 1; color: var(--ink-3); }
 .c-text { font-size: .75rem; color: var(--ink-3); line-height: 1.2; }
-.c-na, .c-idle {
+.c-idle, .c-lock {
   flex: 1; display: flex; flex-direction: column; justify-content: space-between; gap: 4px;
-  padding: 7px 8px; border-radius: 8px;
+  padding: 7px 8px; border-radius: 8px; position: relative;
 }
-.c-na { background: repeating-linear-gradient(135deg, var(--hatch) 0 2px, transparent 2px 7px); border: 1px solid var(--line); }
-.c-na .c-text { color: var(--ink-3); }
 .c-idle { border: 1px dashed var(--line); }
+.c-lock { background: var(--init); color: var(--on-ink); }
+.c-lock .c-plant, .c-lock .c-tag { color: var(--on-sub); }
 
 .c-btn {
   appearance: none; flex: 1; position: relative;
@@ -321,14 +321,12 @@ h2 { font-size: 1.25rem; line-height: 1.2; font-weight: 600; color: var(--ink); 
   display: grid; place-items: center; border: 1.5px solid var(--line-strong); color: var(--ink-3);
 }
 .c-mark svg { width: 11px; height: 11px; }
+.c-lock .c-mark { border: 0; color: var(--on-sub); }
+.c-lock .c-mark svg { width: 13px; height: 13px; }
 .c-tag { font-size: .75rem; line-height: 1.2; color: var(--ink-3); }
-.c-btn[aria-pressed="true"] { border-style: solid; color: var(--on-ink); }
+.c-btn[aria-pressed="true"] { border-style: solid; color: var(--on-ink); background: var(--new); border-color: var(--new); }
 .c-btn[aria-pressed="true"] .c-plant, .c-btn[aria-pressed="true"] .c-tag { color: var(--on-sub); }
-.c-btn[aria-pressed="true"] .c-mark { background: #fff; border-color: #fff; }
-.is-init .c-btn[aria-pressed="true"] { background: var(--init); border-color: var(--init); }
-.is-init .c-btn[aria-pressed="true"] .c-mark { color: var(--init); }
-.is-new .c-btn[aria-pressed="true"] { background: var(--new); border-color: var(--new); }
-.is-new .c-btn[aria-pressed="true"] .c-mark { color: var(--new); }
+.c-btn[aria-pressed="true"] .c-mark { background: #fff; border-color: #fff; color: var(--new); }
 .c-btn[aria-pressed="true"]:hover { filter: brightness(1.08); }
 
 .c-in {
@@ -352,37 +350,42 @@ h2 { font-size: 1.25rem; line-height: 1.2; font-weight: 600; color: var(--ink); 
 .m-sum { grid-area: sum; display: flex; align-items: center; gap: 10px; min-width: 0; }
 .m-meter { flex: 1; min-width: 0; }
 .m-track { position: relative; height: 10px; border-radius: 5px; background: var(--track); overflow: hidden; }
-.m-zone { position: absolute; top: 0; bottom: 0; background: var(--zone); }
-.m-fill { position: absolute; left: 0; top: 2px; bottom: 2px; width: 0; border-radius: 0 3px 3px 0; background: var(--ink-3); transition: width .25s cubic-bezier(.2, .7, .2, 1); }
-.m-min { position: absolute; top: 0; bottom: 0; width: 2px; margin-left: -1px; background: var(--ink-2); }
-.mrow.is-ok .m-fill { background: var(--ok); }
-.mrow.is-low .m-fill, .mrow.is-high .m-fill { background: var(--danger); }
-.m-val { flex: none; min-width: 4.6em; text-align: right; font-size: .875rem; color: var(--ink-3); white-space: nowrap; }
+.m-fill { position: absolute; left: 0; top: 0; bottom: 0; width: 0; border-radius: 0 5px 5px 0; background: var(--ink-3); transition: width .25s cubic-bezier(.2, .7, .2, 1); }
+.m-dline { position: absolute; top: 0; bottom: 0; width: 2px; margin-left: -1px; background: var(--ink-2); display: none; }
+.mrow.is-over .m-dline { display: block; }
+.mrow.is-ok .m-fill, .mrow.is-over .m-fill { background: var(--ok); }
+.mrow.is-short .m-fill { background: var(--warn-fill); }
+.m-note { margin-top: 3px; font-size: .75rem; line-height: 1.25; color: var(--ink-3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mrow.is-short .m-note { color: var(--warn); }
+.n-short { display: none; }
+.m-val { flex: none; min-width: 4.4em; text-align: right; font-size: .875rem; color: var(--ink-3); white-space: nowrap; }
 .m-val b { font-size: 1.0625rem; font-weight: 600; color: var(--ink); }
-.mrow.is-low .m-val b, .mrow.is-high .m-val b { color: var(--danger); }
 .m-icon { flex: none; width: 18px; height: 18px; border-radius: 50%; display: grid; place-items: center; background: var(--neutral-bg); color: var(--ink-3); }
 .m-icon svg { width: 10px; height: 10px; }
-.mrow.is-ok .m-icon { background: var(--ok-bg); color: var(--ok); }
-.mrow.is-low .m-icon, .mrow.is-high .m-icon { background: var(--danger-bg); color: var(--danger); }
-.mrow.is-low, .mrow.is-high { border-color: color-mix(in srgb, var(--danger) 45%, var(--line)); }
+.mrow.is-ok .m-icon, .mrow.is-over .m-icon { background: var(--ok-bg); color: var(--ok); }
+.mrow.is-short .m-icon { background: var(--warn-bg); color: var(--warn); }
 
 /* one line per model when there is room */
 @container (min-width: 600px) {
   .cols {
-    display: grid; grid-template-columns: 112px repeat(3, minmax(0, 1fr)) minmax(170px, 1.5fr);
+    display: grid; grid-template-columns: 104px repeat(3, minmax(0, 1fr)) minmax(180px, 1.7fr);
     gap: 8px; padding: 0 11px 6px; font-size: .8125rem; font-weight: 600; color: var(--ink-2);
   }
   .cols span:last-child { padding-left: 28px; }
   .rows { gap: 6px; }
   .mrow {
-    grid-template-columns: 112px repeat(3, minmax(0, 1fr)) minmax(170px, 1.5fr);
+    grid-template-columns: 104px repeat(3, minmax(0, 1fr)) minmax(180px, 1.7fr);
     grid-template-areas: "head c0 c1 c2 sum";
     align-items: center;
     padding: 8px 10px;
   }
   .m-head { flex-direction: column; align-items: flex-start; gap: 2px; }
+  .m-dem { display: flex; flex-direction: column; line-height: 1.3; }
+  .m-dem .dot { display: none; }
+  .n-long { display: none; }
+  .n-short { display: inline; }
   .c-plant { display: none; }
-  .c-btn, .c-na, .c-idle { justify-content: flex-end; }
+  .c-btn, .c-idle, .c-lock { justify-content: flex-end; }
   .c-in { justify-content: center; }
 }
 
@@ -427,14 +430,12 @@ h2 { font-size: 1.25rem; line-height: 1.2; font-weight: 600; color: var(--ink); 
 table { border-collapse: collapse; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; font-size: .9375rem; }
 th, td { padding: 6px 10px; border-bottom: 1px solid var(--line); text-align: right; white-space: nowrap; }
 th:first-child, td:first-child { text-align: left; }
-thead th { font-size: .8125rem; font-weight: 600; color: var(--ink-2); background: var(--paper); }
+thead th { font-size: .8125rem; font-weight: 600; color: var(--ink-2); background: var(--paper); vertical-align: bottom; }
 tbody tr:last-child td, tbody tr:last-child th { border-bottom: 0; }
 tbody th { font-weight: 500; }
 td.init { background: var(--init-tint); font-weight: 600; color: var(--heading); }
 td.zero { color: var(--ink-3); }
 .tbl-note { margin-top: 6px; font-size: .8125rem; color: var(--ink-3); max-width: 60ch; }
-.param { font-size: .9375rem; color: var(--ink-2); }
-.param b { color: var(--ink); font-weight: 600; }
 
 /* ---------- Footer ---------- */
 .foot { padding-top: 20px; padding-bottom: calc(28px + env(safe-area-inset-bottom)); border-top: 1px solid var(--line); font-size: .8125rem; color: var(--ink-3); }
@@ -491,18 +492,23 @@ td.zero { color: var(--ink-3); }
   }
   .panel-head { display: block; margin-bottom: 12px; }
   .figures { flex-direction: column; align-items: stretch; gap: 4px; }
-  .fig-value { font-size: 3rem; }
-  .fig-sub { display: block; }
+  .fig-value { font-size: 2.375rem; }
   .figures .status { justify-content: flex-start; text-align: left; font-size: .9375rem; margin-top: 8px; }
   .status-short { display: none; }
   .status-long { display: inline; }
   .issues { display: block; margin: 6px 0 0 28px; padding: 0; list-style: none; font-size: .875rem; color: var(--ink-2); }
   .issues li + li { margin-top: 2px; }
+  .costs { display: none; }
+  .cost-table { display: block; margin: 10px 0 0; font-size: .9375rem; }
+  .cost-table div { display: flex; justify-content: space-between; gap: 12px; padding: 3px 0; color: var(--ink-2); }
+  .cost-table dd { margin: 0; font-weight: 600; color: var(--ink); white-space: nowrap; }
+  .cost-table .gap-row { margin-top: 4px; padding-top: 7px; border-top: 1px solid var(--line); }
   .plants { grid-template-columns: 1fr; gap: 14px; margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--line); }
   .pl-top { font-size: .9375rem; }
   .pl-track { height: 12px; border-radius: 6px; margin-top: 6px; }
   .pl-sub { font-size: .8125rem; }
-  .pl-long { display: inline; }
+  .short { display: none; }
+  .long { display: inline; }
   .panel-note { display: block; margin-top: 14px; font-size: .8125rem; color: var(--ink-3); }
 }
 @media (min-width: 1100px) {
@@ -512,7 +518,7 @@ td.zero { color: var(--ink-3); }
   *, *::before, *::after { transition: none !important; animation: none !important; }
 }
 @media (forced-colors: active) {
-  .c-btn[aria-pressed="true"] { outline: 3px solid Highlight; }
+  .c-btn[aria-pressed="true"], .c-lock { outline: 3px solid Highlight; }
 }
 </style>
 </head>
@@ -520,14 +526,14 @@ td.zero { color: var(--ink-3); }
 
 <header class="masthead wrap">
   <svg class="logo" role="img" aria-label="Institut für Automobilwirtschaft und Industrielle Produktion (AIP)" focusable="false" viewBox="245 25 4700 1016" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" stroke-linejoin="round" stroke-miterlimit="2" fill-rule="evenodd" clip-rule="evenodd" overflow="hidden"><g transform="scale(4.16667 4.16667)"><g><g transform="translate(1051.27 216.39)"><path d="M0-201.917C-50.271-207.721-106.995-199.063-152.008-180.847-189.193-165.797-219.392-142.755-234.017-117.425-243.575-100.872-246.214-85.563-242.677-69.849-234.241-32.403-189.258-0.995-120.581 6.939-99.934 9.316-78.985 9.334-58.474 7.373L-58.474-1.533C-77.497-0.186-96.853 1.006-115.89-1.198-209.719-12.028-260.741-64.683-229.632-118.562-198.526-172.442-96.272-211.251-0.964-200.245 83.34-190.511 132.077-144.957 119.547-97.067L122.573-97.067C135.401-146.568 82.9-192.343 0-201.917" fill="#F37427" fill-rule="nonzero"/></g><g transform="translate(923.035 11.4395)"><path d="M0 226.614C-100.488 215.009-152.469 152.54-115.877 89.162-79.285 25.782 29.135-12.205 130.288-0.524 219.318 9.756 270.534 57.968 257.22 107.883L260.425 107.883C273.111 54.657 218.137 7.523 131.425-2.489 76.229-8.863 14.099 0.094-35.081 20.984-72.904 37.049-103.934 61.641-120.465 90.274-129.76 106.367-133.971 121.125-133.5 136.625-132.047 184.553-84.415 225.594-5.519 234.705 19.383 237.582 44.84 238.819 69.762 236.373L69.762 227.959C46.617 230.555 23.021 229.274 0 226.614" fill="#F37427" fill-rule="nonzero"/></g><g transform="translate(1052.83 227.933)"><path d="M0-216.15C-52.83-222.252-112.063-213.505-159.022-194.166-196.774-178.614-227.546-154.743-243.161-127.703-252.608-111.343-256.075-96.276-254.118-80.623-248.819-38.215-202.265-2.273-128.408 6.254-105.729 8.878-87.892 9.457-60.028 7.474L-60.028-0.433C-81.011 1.444-102.379 1.338-123.323-1.082-220.642-12.321-272.386-70.438-238.675-128.827-204.96-187.216-98.362-225.607-1.048-214.338 84.138-204.475 134.864-158.895 122.698-108.611L125.829-108.611C138.547-160.944 84.244-206.421 0-216.15" fill="#F37427" fill-rule="nonzero"/></g><g transform="translate(949.273 106.471)"><path d="M0 32.606-41.128 32.606C-50.116 32.606-57.43 25.293-57.43 16.31-57.43 7.319-50.116 0.009-41.128 0.009L-9.749 0.009C-0.764 0.009 6.548 7.319 6.548 16.31L6.551 56.97 30.918 56.97 30.92 16.31C30.92-6.157 12.711-24.367-9.749-24.367L-41.128-24.367C-63.589-24.367-81.803-6.157-81.803 16.31-81.803 38.769-63.589 56.973-41.128 56.973L0 56.973 0 32.606Z" fill="currentColor" fill-rule="nonzero"/></g><g transform="translate(1049.29 135.723)"><path d="M0 27.721 41.128 27.721C63.59 27.721 81.805 9.517 81.805-12.942 81.805-35.409 63.59-53.619 41.128-53.619L9.747-53.619C-12.711-53.619-30.918-35.409-30.918-12.942L-30.917 81.34-6.554 81.34-6.548-12.942C-6.548-21.933 0.767-29.243 9.747-29.243L41.128-29.243C50.117-29.243 57.432-21.933 57.432-12.942 57.432-3.96 50.117 3.354 41.128 3.354L0 3.354 0 27.721Z" fill="currentColor" fill-rule="nonzero"/></g><g transform="matrix(-1 0 0 1 1998.43 -9.62)"><rect x="987.333" y="91.674" width="23.76" height="81.39" fill="currentColor"/></g><g transform="matrix(-1 0 0 1 1998.43 -131.644)"><rect x="987.333" y="181.303" width="23.76" height="24.156" fill="currentColor"/></g></g><g><g><g transform="matrix(54 0 0 54 55.4106 117.055)"><rect x="0.102" y="-0.659" width="0.078" height="0.659" fill="currentColor" fill-rule="nonzero"/></g><g transform="matrix(54 0 0 54 70.6926 117.055)"><path d="M0.469-0.211C0.469-0.256 0.469-0.301 0.465-0.346 0.458-0.439 0.402-0.465 0.321-0.465 0.252-0.465 0.207-0.431 0.169-0.386L0.157-0.453 0.086-0.453C0.09-0.417 0.094-0.379 0.094-0.327L0.094 0 0.171 0 0.171-0.304C0.193-0.334 0.235-0.378 0.246-0.384 0.253-0.388 0.288-0.396 0.314-0.396 0.381-0.396 0.387-0.361 0.391-0.292 0.392-0.274 0.392-0.255 0.392-0.238L0.392-0.196C0.392-0.129 0.392-0.102 0.39 0L0.466 0C0.469-0.103 0.469-0.139 0.469-0.211Z" fill="currentColor" fill-rule="nonzero"/></g><g transform="matrix(54 0 0 54 100.447 117.055)"><path d="M0.359-0.122C0.359-0.26 0.118-0.261 0.118-0.344 0.118-0.387 0.162-0.403 0.203-0.403 0.249-0.403 0.301-0.395 0.345-0.359L0.353-0.431C0.32-0.448 0.273-0.465 0.209-0.465 0.096-0.465 0.041-0.41 0.041-0.339 0.041-0.204 0.282-0.202 0.282-0.117 0.282-0.079 0.245-0.05 0.185-0.05 0.124-0.05 0.099-0.066 0.052-0.096L0.043-0.024C0.078 0 0.132 0.013 0.187 0.013 0.305 0.013 0.359-0.053 0.359-0.122Z" fill="currentColor" fill-rule="nonzero"/></g><g transform="matrix(54 0 0 54 122.047 117.055)"><path d="M0.287-0.016 0.281-0.08C0.258-0.07 0.236-0.054 0.214-0.054 0.18-0.054 0.167-0.076 0.167-0.125L0.167-0.393 0.286-0.393 0.286-0.453 0.167-0.453 0.167-0.606 0.092-0.606 0.092-0.452 0.01-0.452 0.01-0.392 0.092-0.392 0.092-0.1C0.092-0.021 0.136 0.013 0.19 0.013 0.224 0.013 0.263-0.001 0.287-0.016Z" fill="currentColor" fill-rule="nonzero"/></g><g transform="matrix(54 0 0 54 138.733 117.055)"><path d="M0.176-0.619C0.176-0.647 0.152-0.673 0.124-0.673 0.098-0.673 0.075-0.647 0.075-0.619 0.075-0.59 0.098-0.562 0.124-0.562 0.152-0.562 0.176-0.591 0.176-0.619ZM0.164 0 0.164-0.453 0.087-0.453 0.087 0 0.164 0Z" fill="currentColor" fill-rule="nonzero"/></g><g transform="matrix(54 0 0 54 152.287 117.055)"><path d="M0.287-0.016 0.281-0.08C0.258-0.07 0.236-0.054 0.214-0.054 0.18-0.054 0.167-0.076 0.167-0.125L0.167-0.393 0.286-0.393 0.286-0.453 0.167-0.453 0.167-0.606 0.092-0.606 0.092-0.452 0.01-0.452 0.01-0.392 0.092-0.392 0.092-0.1C0.092-0.021 0.136 0.013 0.19 0.013 0.224 0.013 0.263-0.001 0.287-0.016Z" fill="currentColor" fill-rule="nonzero"/></g><g transform="matrix(54 0 0 54 168.973 117.055)"><path d="M0.462 0C0.456-0.041 0.454-0.084 0.454-0.125L0.454-0.453 0.377-0.453 0.377-0.152C0.369-0.133 0.34-0.094 0.314-0.072 0.289-0.06 0.262-0.054 0.234-0.054 0.164-0.054 0.159-0.104 0.159-0.16L0.159-0.453 0.082-0.453 0.082-0.106C0.082-0.015 0.146 0.013 0.227 0.013 0.3 0.013 0.337-0.007 0.38-0.066L0.392 0 0.462 0Z" fill="currentColor" fill-rule="nonzero"/></g><g transform="matrix(54 0 0 54 198.349 117.055)"><path d="M0.287-0.016 0.281-0.08C0.258-0.07 0.236-0.054 0.214-0.054 0.18-0.054 0.167-0.076 0.167-0.125L0.167-0.393 0.286-0.393 0.286-0.453 0.167-0.453 0.167-0.606 0.092-0.606 0.092-0.452 0.01-0.452 0.01-0.392 0.092-0.392 0.092-0.1C0.092-0.021 0.136 0.013 0.19 0.013 0.224 0.013 0.263-0.001 0.287-0.016Z" fill="currentColor" fill-rule="nonzero"/></g><g transform="matrix(54 0 0 54 227.995 117.055)"><path d="M0.4-0.724C0.375-0.734 0.344-0.743 0.306-0.743 0.165-0.743 0.099-0.694 0.099-0.462L0.099-0.452 0.016-0.452 0.016-0.392 0.099-0.392 0.099 0 0.176 0 0.176-0.393 0.292-0.393 0.292-0.453 0.176-0.453C0.176-0.628 0.216-0.655 0.223-0.66 0.228-0.664 0.262-0.676 0.296-0.676 0.342-0.676 0.363-0.665 0.392-0.647L0.4-0.724Z" fill="currentColor" fill-rule="nonzero"/></g><g transform="matrix(54 0 0 54 243.493 117.055)"><path d="M0.462 0C0.456-0.041 0.454-0.084 0.454-0.125L0.454-0.453 0.377-0.453 0.377-0.152C0.369-0.133 0.34-0.094 0.314-0.072 0.289-0.06 0.262-0.054 0.234-0.054 0.164-0.054 0.159-0.104 0.159-0.16L0.159-0.453 0.082-0.453 0.082-0.106C0.082-0.015 0.146 0.013 0.227 0.013 0.3 0.013 0.337-0.007 0.38-0.066L0.392 0 0.462 0ZM0.435-0.581C0.435-0.613 0.411-0.639 0.381-0.639 0.351-0.639 0.328-0.612 0.328-0.581 0.328-0.551 0.351-0.526 0.381-0.526 0.411-0.526 0.435-0.551 0.435-0.581ZM0.218-0.581C0.218-0.613 0.194-0.639 0.164-0.639 0.134-0.639 0.111-0.612 0.111-0.581 0.111-0.551 0.134-0.526 0.164-0.526 0.194-0.526 0.218-0.551 0.218-0.581Z" fill="currentColor" fill-rule="nonzero"/></g><g transform="matrix(54 0 0 54 272.869 117.055)"><path d="M0.347-0.371C0.347-0.38 0.345-0.389 0.344-0.398 0.339-0.441 0.315-0.464 0.273-0.464 0.224-0.464 0.185-0.42 0.17-0.381L0.157-0.453 0.086-0.453C0.091-0.408 0.094-0.377 0.094-0.329L0.094 0 0.171 0 0.171-0.288C0.187-0.325 0.219-0.395 0.262-0.395 0.292-0.395 0.294-0.369 0.294-0.363L0.347-0.371Z" fill="currentColor" fill-rule="nonzero"/></g><g transform="matrix(54 0 0 54 303.649 117.055)"><path d="M0.542 0 0.3-0.681 0.262-0.681 0.007 0 0.083 0 0.153-0.189 0.392-0.189 0.458 0 0.542 0ZM0.368-0.255 0.176-0.255 0.276-0.523 0.368-0.255Z" fill="currentColor" fill-rule="nonzero"/></g><g transform="matrix(54 0 0 54 333.295 117.055)"><path d="M0.462 0C0.456-0.041 0.454-0.084 0.454-0.125L0.454-0.453 0.377-0.453 0.377-0.152C0.369-0.133 0.34-0.094 0.314-0.072 0.289-0.06 0.262-0.054 0.234-0.054 0.164-0.054 0.159-0.104 0.159-0.16L0.159-0.453 0.082-0.453 0.082-0.106C0.082-0.015 0.146 0.013 0.227 0.013 0.3 0.013 0.337-0.007 0.38-0.066L0.392 0 0.462 0Z" fill="currentColor" fill-rule="nonzero"/></g><g transform="matrix(54 0 0 54 362.671 117.055)"><path d="M0.287-0.016 0.281-0.08C0.258-0.07 0.236-0.054 0.214-0.054 0.18-0.054 0.167-0.076 0.167-0.125L0.167-0.393 0.286-0.393 0.286-0.453 0.167-0.453 0.167-0.606 0.092-0.606 0.092-0.452 0.01-0.452 0.01-0.392 0.092-0.392 0.092-0.1C0.092-0.021 0.136 0.013 0.19 0.013 0.224 0.013 0.263-0.001 0.287-0.016Z" fill="currentColor" fill-rule="nonzero"/></g><g transform="matrix(54 0 0 54 379.357 117.055)"><path d="M0.474-0.226C0.474-0.373 0.39-0.465 0.263-0.465 0.119-0.465 0.042-0.359 0.042-0.226 0.042-0.08 0.126 0.013 0.252 0.013 0.389 0.013 0.474-0.086 0.474-0.226ZM0.39-0.24C0.391-0.233 0.391-0.226 0.391-0.219 0.391-0.141 0.351-0.09 0.34-0.079 0.33-0.069 0.293-0.054 0.262-0.054 0.202-0.054 0.125-0.087 0.125-0.231 0.125-0.309 0.166-0.364 0.176-0.374 0.185-0.383 0.217-0.399 0.253-0.399 0.322-0.399 0.38-0.365 0.39-0.24Z" fill="currentColor" fill-rule="nonzero"/></g><g transform="matrix(54 0 0 54 407.221 117.055)"><path d="M0.764-0.211C0.764-0.256 0.764-0.301 0.76-0.346 0.753-0.439 0.697-0.465 0.616-0.465 0.547-0.465 0.501-0.432 0.459-0.38 0.442-0.446 0.391-0.465 0.321-0.465 0.252-0.465 0.207-0.431 0.169-0.386L0.157-0.453 0.086-0.453C0.09-0.417 0.094-0.375 0.094-0.327L0.094 0 0.171 0 0.171-0.304C0.193-0.334 0.235-0.378 0.246-0.384 0.253-0.388 0.288-0.396 0.314-0.396 0.374-0.396 0.39-0.365 0.39-0.304L0.39 0 0.466 0 0.466-0.304C0.488-0.334 0.53-0.378 0.541-0.384 0.548-0.388 0.583-0.396 0.609-0.396 0.676-0.396 0.682-0.361 0.686-0.292 0.687-0.274 0.687-0.255 0.687-0.238L0.687-0.196C0.687-0.129 0.687-0.102 0.685 0L0.762 0C0.764-0.103 0.764-0.139 0.764-0.211Z" fill="currentColor" fill-rule="nonzero"/></g><g transform="matrix(54 0 0 54 452.905 117.055)"><path d="M0.474-0.226C0.474-0.373 0.39-0.465 0.263-0.465 0.119-0.465 0.042-0.359 0.042-0.226 0.042-0.08 0.126 0.013 0.252 0.013 0.389 0.013 0.474-0.086 0.474-0.226ZM0.39-0.24C0.391-0.233 0.391-0.226 0.391-0.219 0.391-0.141 0.351-0.09 0.34-0.079 0.33-0.069 0.293-0.054 0.262-0.054 0.202-0.054 0.125-0.087 0.125-0.231 0.125-0.309 0.166-0.364 0.176-0.374 0.185-0.383 0.217-0.399 0.253-0.399 0.322-0.399 0.38-0.365 0.39-0.24Z" fill="currentColor" fill-rule="nonzero"/></g><g transform="matrix(54 0 0 54 480.769 117.055)"><path d="M0.476-0.236C0.476-0.404 0.402-0.465 0.299-0.465 0.242-0.465 0.196-0.452 0.159-0.437L0.159-0.73 0.082-0.73 0.082-0.004C0.143 0.008 0.196 0.013 0.237 0.013 0.387 0.013 0.476-0.084 0.476-0.236ZM0.392-0.23C0.392-0.115 0.333-0.054 0.233-0.054 0.212-0.054 0.19-0.054 0.159-0.06L0.159-0.369C0.18-0.38 0.207-0.389 0.221-0.393 0.226-0.395 0.248-0.396 0.285-0.396 0.366-0.396 0.392-0.327 0.392-0.23Z" fill="currentColor" fill-rule="nonzero"/></g><g transform="matrix(54 0 0 54 508.741 117.055)"><path d="M0.176-0.619C0.176-0.647 0.152-0.673 0.124-0.673 0.098-0.673 0.075-0.647 0.075-0.619 0.075-0.59 0.098-0.562 0.124-0.562 0.152-0.562 0.176-0.591 0.176-0.619ZM0.164 0 0.164-0.453 0.087-0.453 0.087 0 0.164 0Z" fill="currentColor" fill-rule="nonzero"/></g><g transform="matrix(54 0 0 54 522.295 117.055)"><rect x="0.082" y="-0.73" width="0.077" height="0.73" fill="currentColor" fill-rule="nonzero"/></g><g transform="matrix(54 0 0 54 535.309 117.055)"><path d="M0.653-0.453 0.577-0.453 0.471-0.102 0.331-0.473 0.207-0.102 0.087-0.453 0.005-0.453 0.174 0.013 0.234 0.013 0.331-0.284 0.437 0.013 0.497 0.013 0.653-0.453Z" fill="currentColor" fill-rule="nonzero"/></g><g transform="matrix(54 0 0 54 570.841 117.055)"><path d="M0.176-0.619C0.176-0.647 0.152-0.673 0.124-0.673 0.098-0.673 0.075-0.647 0.075-0.619 0.075-0.59 0.098-0.562 0.124-0.562 0.152-0.562 0.176-0.591 0.176-0.619ZM0.164 0 0.164-0.453 0.087-0.453 0.087 0 0.164 0Z" fill="currentColor" fill-rule="nonzero"/></g><g transform="matrix(54 0 0 54 584.395 117.055)"><path d="M0.347-0.371C0.347-0.38 0.345-0.389 0.344-0.398 0.339-0.441 0.315-0.464 0.273-0.464 0.224-0.464 0.185-0.42 0.17-0.381L0.157-0.453 0.086-0.453C0.091-0.408 0.094-0.377 0.094-0.329L0.094 0 0.171 0 0.171-0.288C0.187-0.325 0.219-0.395 0.262-0.395 0.292-0.395 0.294-0.369 0.294-0.363L0.347-0.371Z" fill="currentColor" fill-rule="nonzero"/></g><g transform="matrix(54 0 0 54 603.133 117.055)"><path d="M0.287-0.016 0.281-0.08C0.258-0.07 0.236-0.054 0.214-0.054 0.18-0.054 0.167-0.076 0.167-0.125L0.167-0.393 0.286-0.393 0.286-0.453 0.167-0.453 0.167-0.606 0.092-0.606 0.092-0.452 0.01-0.452 0.01-0.392 0.092-0.392 0.092-0.1C0.092-0.021 0.136 0.013 0.19 0.013 0.224 0.013 0.263-0.001 0.287-0.016Z" fill="currentColor" fill-rule="nonzero"/></g><g transform="matrix(54 0 0 54 619.819 117.055)"><path d="M0.359-0.122C0.359-0.26 0.118-0.261 0.118-0.344 0.118-0.387 0.162-0.403 0.203-0.403 0.249-0.403 0.301-0.395 0.345-0.359L0.353-0.431C0.32-0.448 0.273-0.465 0.209-0.465 0.096-0.465 0.041-0.41 0.041-0.339 0.041-0.204 0.282-0.202 0.282-0.117 0.282-0.079 0.245-0.05 0.185-0.05 0.124-0.05 0.099-0.066 0.052-0.096L0.043-0.024C0.078 0 0.132 0.013 0.187 0.013 0.305 0.013 0.359-0.053 0.359-0.122Z" fill="currentColor" fill-rule="nonzero"/></g><g transform="matrix(54 0 0 54 641.419 117.055)"><path d="M0.403-0.03 0.397-0.1C0.366-0.075 0.307-0.054 0.269-0.054 0.202-0.054 0.126-0.106 0.126-0.233 0.126-0.354 0.189-0.387 0.197-0.391 0.204-0.395 0.221-0.399 0.252-0.399 0.306-0.399 0.328-0.39 0.328-0.351L0.4-0.351C0.4-0.362 0.4-0.375 0.399-0.384 0.393-0.444 0.331-0.465 0.248-0.465 0.156-0.465 0.042-0.396 0.042-0.23 0.042-0.071 0.128 0.013 0.248 0.013 0.301 0.013 0.356 0.001 0.403-0.03Z" fill="currentColor" fill-rule="nonzero"/></g><g transform="matrix(54 0 0 54 663.883 117.055)"><path d="M0.456-0.211C0.456-0.256 0.456-0.301 0.453-0.346 0.446-0.439 0.389-0.465 0.309-0.465 0.239-0.465 0.197-0.434 0.159-0.389L0.159-0.73 0.082-0.73 0.082 0 0.159 0 0.159-0.304C0.18-0.334 0.222-0.378 0.233-0.384 0.24-0.388 0.275-0.396 0.302-0.396 0.369-0.396 0.374-0.361 0.378-0.292 0.38-0.256 0.38-0.217 0.38-0.196 0.38-0.129 0.38-0.102 0.377 0L0.454 0C0.456-0.103 0.456-0.139 0.456-0.211Z" fill="currentColor" fill-rule="nonzero"/></g><g transform="matrix(54 0 0 54 692.935 117.055)"><path d="M0.392 0C0.382-0.033 0.372-0.089 0.372-0.135L0.372-0.345C0.372-0.418 0.321-0.465 0.222-0.465 0.125-0.465 0.077-0.43 0.075-0.422 0.069-0.403 0.066-0.38 0.066-0.354L0.138-0.36C0.138-0.395 0.168-0.399 0.211-0.399 0.276-0.399 0.295-0.384 0.295-0.317L0.295-0.254C0.25-0.246 0.091-0.209 0.065-0.172 0.055-0.159 0.047-0.131 0.047-0.089 0.047-0.032 0.09 0.013 0.159 0.013 0.231 0.013 0.271-0.022 0.301-0.065 0.306-0.039 0.314-0.024 0.32 0L0.392 0ZM0.295-0.128C0.295-0.12 0.239-0.054 0.18-0.054 0.133-0.054 0.125-0.074 0.125-0.102 0.125-0.111 0.125-0.12 0.13-0.139 0.174-0.16 0.247-0.186 0.295-0.194L0.295-0.128Z" fill="currentColor" fill-rule="nonzero"/></g><g transform="matrix(54 0 0 54 717.127 117.055)"><path d="M0.4-0.724C0.375-0.734 0.344-0.743 0.306-0.743 0.165-0.743 0.099-0.694 0.099-0.462L0.099-0.452 0.016-0.452 0.016-0.392 0.099-0.392 0.099 0 0.176 0 0.176-0.393 0.292-0.393 0.292-0.453 0.176-0.453C0.176-0.628 0.216-0.655 0.223-0.66 0.228-0.664 0.262-0.676 0.296-0.676 0.342-0.676 0.363-0.665 0.392-0.647L0.4-0.724Z" fill="currentColor" fill-rule="nonzero"/></g><g transform="matrix(54 0 0 54 732.625 117.055)"><path d="M0.287-0.016 0.281-0.08C0.258-0.07 0.236-0.054 0.214-0.054 0.18-0.054 0.167-0.076 0.167-0.125L0.167-0.393 0.286-0.393 0.286-0.453 0.167-0.453 0.167-0.606 0.092-0.606 0.092-0.452 0.01-0.452 0.01-0.392 0.092-0.392 0.092-0.1C0.092-0.021 0.136 0.013 0.19 0.013 0.224 0.013 0.263-0.001 0.287-0.016Z" fill="currentColor" fill-rule="nonzero"/></g><g transform="matrix(54 0 0 54 55.4106 163.063)"><path d="M0.462 0C0.456-0.041 0.454-0.084 0.454-0.125L0.454-0.453 0.377-0.453 0.377-0.152C0.369-0.133 0.34-0.094 0.314-0.072 0.289-0.06 0.262-0.054 0.234-0.054 0.164-0.054 0.159-0.104 0.159-0.16L0.159-0.453 0.082-0.453 0.082-0.106C0.082-0.015 0.146 0.013 0.227 0.013 0.3 0.013 0.337-0.007 0.38-0.066L0.392 0 0.462 0Z" fill="currentColor" fill-rule="nonzero"/></g><g transform="matrix(54 0 0 54 84.7866 163.063)"><path d="M0.469-0.211C0.469-0.256 0.469-0.301 0.465-0.346 0.458-0.439 0.402-0.465 0.321-0.465 0.252-0.465 0.207-0.431 0.169-0.386L0.157-0.453 0.086-0.453C0.09-0.417 0.094-0.379 0.094-0.327L0.094 0 0.171 0 0.171-0.304C0.193-0.334 0.235-0.378 0.246-0.384 0.253-0.388 0.288-0.396 0.314-0.396 0.381-0.396 0.387-0.361 0.391-0.292 0.392-0.274 0.392-0.255 0.392-0.238L0.392-0.196C0.392-0.129 0.392-0.102 0.39 0L0.466 0C0.469-0.103 0.469-0.139 0.469-0.211Z" fill="currentColor" fill-rule="nonzero"/></g><g transform="matrix(54 0 0 54 114.541 163.063)"><path d="M0.456 0C0.451-0.045 0.448-0.08 0.448-0.125L0.448-0.73 0.371-0.73 0.371-0.45C0.335-0.46 0.314-0.465 0.272-0.465 0.131-0.465 0.042-0.377 0.042-0.224 0.042-0.081 0.127 0.013 0.235 0.013 0.295 0.013 0.331-0.006 0.376-0.054 0.378-0.037 0.381-0.017 0.385 0L0.456 0ZM0.371-0.133C0.344-0.094 0.301-0.054 0.247-0.054 0.197-0.054 0.126-0.11 0.126-0.231 0.126-0.32 0.17-0.373 0.182-0.384 0.193-0.394 0.235-0.399 0.265-0.399 0.348-0.399 0.371-0.389 0.371-0.315L0.371-0.133Z" fill="currentColor" fill-rule="nonzero"/></g><g transform="matrix(54 0 0 54 156.985 163.063)"><rect x="0.102" y="-0.659" width="0.078" height="0.659" fill="currentColor" fill-rule="nonzero"/></g><g transform="matrix(54 0 0 54 172.267 163.063)"><path d="M0.469-0.211C0.469-0.256 0.469-0.301 0.465-0.346 0.458-0.439 0.402-0.465 0.321-0.465 0.252-0.465 0.207-0.431 0.169-0.386L0.157-0.453 0.086-0.453C0.09-0.417 0.094-0.379 0.094-0.327L0.094 0 0.171 0 0.171-0.304C0.193-0.334 0.235-0.378 0.246-0.384 0.253-0.388 0.288-0.396 0.314-0.396 0.381-0.396 0.387-0.361 0.391-0.292 0.392-0.274 0.392-0.255 0.392-0.238L0.392-0.196C0.392-0.129 0.392-0.102 0.39 0L0.466 0C0.469-0.103 0.469-0.139 0.469-0.211Z" fill="currentColor" fill-rule="nonzero"/></g><g transform="matrix(54 0 0 54 202.021 163.063)"><path d="M0.456 0C0.451-0.045 0.448-0.08 0.448-0.125L0.448-0.73 0.371-0.73 0.371-0.45C0.335-0.46 0.314-0.465 0.272-0.465 0.131-0.465 0.042-0.377 0.042-0.224 0.042-0.081 0.127 0.013 0.235 0.013 0.295 0.013 0.331-0.006 0.376-0.054 0.378-0.037 0.381-0.017 0.385 0L0.456 0ZM0.371-0.133C0.344-0.094 0.301-0.054 0.247-0.054 0.197-0.054 0.126-0.11 0.126-0.231 0.126-0.32 0.17-0.373 0.182-0.384 0.193-0.394 0.235-0.399 0.265-0.399 0.348-0.399 0.371-0.389 0.371-0.315L0.371-0.133Z" fill="currentColor" fill-rule="nonzero"/></g><g transform="matrix(54 0 0 54 230.965 163.063)"><path d="M0.462 0C0.456-0.041 0.454-0.084 0.454-0.125L0.454-0.453 0.377-0.453 0.377-0.152C0.369-0.133 0.34-0.094 0.314-0.072 0.289-0.06 0.262-0.054 0.234-0.054 0.164-0.054 0.159-0.104 0.159-0.16L0.159-0.453 0.082-0.453 0.082-0.106C0.082-0.015 0.146 0.013 0.227 0.013 0.3 0.013 0.337-0.007 0.38-0.066L0.392 0 0.462 0Z" fill="currentColor" fill-rule="nonzero"/></g><g transform="matrix(54 0 0 54 260.341 163.063)"><path d="M0.359-0.122C0.359-0.26 0.118-0.261 0.118-0.344 0.118-0.387 0.162-0.403 0.203-0.403 0.249-0.403 0.301-0.395 0.345-0.359L0.353-0.431C0.32-0.448 0.273-0.465 0.209-0.465 0.096-0.465 0.041-0.41 0.041-0.339 0.041-0.204 0.282-0.202 0.282-0.117 0.282-0.079 0.245-0.05 0.185-0.05 0.124-0.05 0.099-0.066 0.052-0.096L0.043-0.024C0.078 0 0.132 0.013 0.187 0.013 0.305 0.013 0.359-0.053 0.359-0.122Z" fill="currentColor" fill-rule="nonzero"/></g><g transform="matrix(54 0 0 54 281.941 163.063)"><path d="M0.287-0.016 0.281-0.08C0.258-0.07 0.236-0.054 0.214-0.054 0.18-0.054 0.167-0.076 0.167-0.125L0.167-0.393 0.286-0.393 0.286-0.453 0.167-0.453 0.167-0.606 0.092-0.606 0.092-0.452 0.01-0.452 0.01-0.392 0.092-0.392 0.092-0.1C0.092-0.021 0.136 0.013 0.19 0.013 0.224 0.013 0.263-0.001 0.287-0.016Z" fill="currentColor" fill-rule="nonzero"/></g><g transform="matrix(54 0 0 54 298.627 163.063)"><path d="M0.347-0.371C0.347-0.38 0.345-0.389 0.344-0.398 0.339-0.441 0.315-0.464 0.273-0.464 0.224-0.464 0.185-0.42 0.17-0.381L0.157-0.453 0.086-0.453C0.091-0.408 0.094-0.377 0.094-0.329L0.094 0 0.171 0 0.171-0.288C0.187-0.325 0.219-0.395 0.262-0.395 0.292-0.395 0.294-0.369 0.294-0.363L0.347-0.371Z" fill="currentColor" fill-rule="nonzero"/></g><g transform="matrix(54 0 0 54 317.365 163.063)"><path d="M0.176-0.619C0.176-0.647 0.152-0.673 0.124-0.673 0.098-0.673 0.075-0.647 0.075-0.619 0.075-0.59 0.098-0.562 0.124-0.562 0.152-0.562 0.176-0.591 0.176-0.619ZM0.164 0 0.164-0.453 0.087-0.453 0.087 0 0.164 0Z" fill="currentColor" fill-rule="nonzero"/></g><g transform="matrix(54 0 0 54 330.919 163.063)"><path d="M0.426-0.251C0.426-0.394 0.379-0.465 0.244-0.465 0.128-0.465 0.042-0.38 0.042-0.225 0.042-0.074 0.132 0.013 0.246 0.013 0.332 0.013 0.378-0.006 0.418-0.031L0.412-0.101C0.385-0.077 0.324-0.054 0.27-0.054 0.176-0.054 0.122-0.116 0.122-0.226 0.122-0.238 0.122-0.24 0.124-0.251L0.426-0.251ZM0.356-0.311 0.134-0.311C0.145-0.356 0.173-0.381 0.179-0.386 0.184-0.391 0.218-0.4 0.239-0.4 0.298-0.4 0.352-0.391 0.356-0.311Z" fill="currentColor" fill-rule="nonzero"/></g><g transform="matrix(54 0 0 54 355.759 163.063)"><rect x="0.082" y="-0.73" width="0.077" height="0.73" fill="currentColor" fill-rule="nonzero"/></g><g transform="matrix(54 0 0 54 368.773 163.063)"><rect x="0.082" y="-0.73" width="0.077" height="0.73" fill="currentColor" fill-rule="nonzero"/></g><g transform="matrix(54 0 0 54 381.787 163.063)"><path d="M0.426-0.251C0.426-0.394 0.379-0.465 0.244-0.465 0.128-0.465 0.042-0.38 0.042-0.225 0.042-0.074 0.132 0.013 0.246 0.013 0.332 0.013 0.378-0.006 0.418-0.031L0.412-0.101C0.385-0.077 0.324-0.054 0.27-0.054 0.176-0.054 0.122-0.116 0.122-0.226 0.122-0.238 0.122-0.24 0.124-0.251L0.426-0.251ZM0.356-0.311 0.134-0.311C0.145-0.356 0.173-0.381 0.179-0.386 0.184-0.391 0.218-0.4 0.239-0.4 0.298-0.4 0.352-0.391 0.356-0.311Z" fill="currentColor" fill-rule="nonzero"/></g><g transform="matrix(54 0 0 54 420.127 163.063)"><path d="M0.513-0.463C0.513-0.589 0.419-0.664 0.308-0.664 0.285-0.664 0.191-0.664 0.139-0.66L0.102-0.658 0.102 0 0.181 0 0.181-0.259C0.214-0.254 0.269-0.254 0.285-0.254 0.398-0.254 0.513-0.339 0.513-0.463ZM0.423-0.463C0.423-0.352 0.344-0.32 0.255-0.32L0.181-0.32 0.181-0.597 0.281-0.598C0.373-0.598 0.423-0.556 0.423-0.463Z" fill="currentColor" fill-rule="nonzero"/></g><g transform="matrix(54 0 0 54 448.693 163.063)"><path d="M0.347-0.371C0.347-0.38 0.345-0.389 0.344-0.398 0.339-0.441 0.315-0.464 0.273-0.464 0.224-0.464 0.185-0.42 0.17-0.381L0.157-0.453 0.086-0.453C0.091-0.408 0.094-0.377 0.094-0.329L0.094 0 0.171 0 0.171-0.288C0.187-0.325 0.219-0.395 0.262-0.395 0.292-0.395 0.294-0.369 0.294-0.363L0.347-0.371Z" fill="currentColor" fill-rule="nonzero"/></g><g transform="matrix(54 0 0 54 467.431 163.063)"><path d="M0.474-0.226C0.474-0.373 0.39-0.465 0.263-0.465 0.119-0.465 0.042-0.359 0.042-0.226 0.042-0.08 0.126 0.013 0.252 0.013 0.389 0.013 0.474-0.086 0.474-0.226ZM0.39-0.24C0.391-0.233 0.391-0.226 0.391-0.219 0.391-0.141 0.351-0.09 0.34-0.079 0.33-0.069 0.293-0.054 0.262-0.054 0.202-0.054 0.125-0.087 0.125-0.231 0.125-0.309 0.166-0.364 0.176-0.374 0.185-0.383 0.217-0.399 0.253-0.399 0.322-0.399 0.38-0.365 0.39-0.24Z" fill="currentColor" fill-rule="nonzero"/></g><g transform="matrix(54 0 0 54 495.295 163.063)"><path d="M0.456 0C0.451-0.045 0.448-0.08 0.448-0.125L0.448-0.73 0.371-0.73 0.371-0.45C0.335-0.46 0.314-0.465 0.272-0.465 0.131-0.465 0.042-0.377 0.042-0.224 0.042-0.081 0.127 0.013 0.235 0.013 0.295 0.013 0.331-0.006 0.376-0.054 0.378-0.037 0.381-0.017 0.385 0L0.456 0ZM0.371-0.133C0.344-0.094 0.301-0.054 0.247-0.054 0.197-0.054 0.126-0.11 0.126-0.231 0.126-0.32 0.17-0.373 0.182-0.384 0.193-0.394 0.235-0.399 0.265-0.399 0.348-0.399 0.371-0.389 0.371-0.315L0.371-0.133Z" fill="currentColor" fill-rule="nonzero"/></g><g transform="matrix(54 0 0 54 524.239 163.063)"><path d="M0.462 0C0.456-0.041 0.454-0.084 0.454-0.125L0.454-0.453 0.377-0.453 0.377-0.152C0.369-0.133 0.34-0.094 0.314-0.072 0.289-0.06 0.262-0.054 0.234-0.054 0.164-0.054 0.159-0.104 0.159-0.16L0.159-0.453 0.082-0.453 0.082-0.106C0.082-0.015 0.146 0.013 0.227 0.013 0.3 0.013 0.337-0.007 0.38-0.066L0.392 0 0.462 0Z" fill="currentColor" fill-rule="nonzero"/></g><g transform="matrix(54 0 0 54 553.615 163.063)"><path d="M0.452 0 0.248-0.251 0.442-0.453 0.339-0.453 0.159-0.261 0.159-0.73 0.082-0.73 0.082 0 0.159 0 0.159-0.205 0.19-0.205 0.357 0 0.452 0Z" fill="currentColor" fill-rule="nonzero"/></g><g transform="matrix(54 0 0 54 578.293 163.063)"><path d="M0.287-0.016 0.281-0.08C0.258-0.07 0.236-0.054 0.214-0.054 0.18-0.054 0.167-0.076 0.167-0.125L0.167-0.393 0.286-0.393 0.286-0.453 0.167-0.453 0.167-0.606 0.092-0.606 0.092-0.452 0.01-0.452 0.01-0.392 0.092-0.392 0.092-0.1C0.092-0.021 0.136 0.013 0.19 0.013 0.224 0.013 0.263-0.001 0.287-0.016Z" fill="currentColor" fill-rule="nonzero"/></g><g transform="matrix(54 0 0 54 594.979 163.063)"><path d="M0.176-0.619C0.176-0.647 0.152-0.673 0.124-0.673 0.098-0.673 0.075-0.647 0.075-0.619 0.075-0.59 0.098-0.562 0.124-0.562 0.152-0.562 0.176-0.591 0.176-0.619ZM0.164 0 0.164-0.453 0.087-0.453 0.087 0 0.164 0Z" fill="currentColor" fill-rule="nonzero"/></g><g transform="matrix(54 0 0 54 608.533 163.063)"><path d="M0.474-0.226C0.474-0.373 0.39-0.465 0.263-0.465 0.119-0.465 0.042-0.359 0.042-0.226 0.042-0.08 0.126 0.013 0.252 0.013 0.389 0.013 0.474-0.086 0.474-0.226ZM0.39-0.24C0.391-0.233 0.391-0.226 0.391-0.219 0.391-0.141 0.351-0.09 0.34-0.079 0.33-0.069 0.293-0.054 0.262-0.054 0.202-0.054 0.125-0.087 0.125-0.231 0.125-0.309 0.166-0.364 0.176-0.374 0.185-0.383 0.217-0.399 0.253-0.399 0.322-0.399 0.38-0.365 0.39-0.24Z" fill="currentColor" fill-rule="nonzero"/></g><g transform="matrix(54 0 0 54 636.397 163.063)"><path d="M0.469-0.211C0.469-0.256 0.469-0.301 0.465-0.346 0.458-0.439 0.402-0.465 0.321-0.465 0.252-0.465 0.207-0.431 0.169-0.386L0.157-0.453 0.086-0.453C0.09-0.417 0.094-0.379 0.094-0.327L0.094 0 0.171 0 0.171-0.304C0.193-0.334 0.235-0.378 0.246-0.384 0.253-0.388 0.288-0.396 0.314-0.396 0.381-0.396 0.387-0.361 0.391-0.292 0.392-0.274 0.392-0.255 0.392-0.238L0.392-0.196C0.392-0.129 0.392-0.102 0.39 0L0.466 0C0.469-0.103 0.469-0.139 0.469-0.211Z" fill="currentColor" fill-rule="nonzero"/></g></g></g></g></svg>
-  <h1 class="title">Allocation planning business game</h1>
+  <h1 class="title">Network planning business game</h1>
 </header>
 
 <main class="wrap layout">
   <section class="task" aria-label="The task">
-    <p class="lead">Ten models, three plants. Decide which plant builds which model and how many vehicles it produces, so that total production is as high as possible.</p>
-    <p>Each plant starts with an initial allocation of models and an initial capacity <span class="v">U<sub>j</sub></span> of 30 thousand vehicles. A plant can take on further models where the allocation possibilities <span class="v">c<sub>ij</sub></span> allow it. Every additional link costs efficiency: for each model above its initial number <span class="v">N<sub>j</sub></span>, the plant loses <span class="v">A</span> = 5&nbsp;% of its capacity (rounded down).</p>
-    <p>Every model has to reach its minimum demand fulfilment <span class="v">M<sub>i</sub></span> and must not exceed its demand <span class="v">D<sub>i</sub></span>. All quantities are in thousand vehicles.</p>
+    <p class="lead">Ten models, three plants. Decide which plant builds which model and how many cars it produces, so that total costs are as low as possible.</p>
+    <p>Each plant starts with its initial allocation, which cannot be removed, and a capacity of 500,000 hours. You can add further links between plants and models. Every additional link costs €1,000,000 and reduces the plant’s available capacity by 5&nbsp;% (1 additional link: −5&nbsp;%, 2 additional links: −10&nbsp;%, …).</p>
+    <p>Each model has a demand of 10 thousand cars and needs a certain number of hours per car. Demand you do not fulfil costs €100 per car and needed hour, e.g. €1,000 for each missing Up. Production is planned in whole thousands of cars. A plan is feasible only if no plant uses more than its available capacity.</p>
   </section>
 
   <div class="side">
@@ -535,9 +541,8 @@ td.zero { color: var(--ink-3); }
       <div class="panel-head"><h2 id="panel-h">Results</h2></div>
       <div class="figures">
         <div class="fig">
-          <span class="fig-label">Total production quantity</span>
-          <span class="fig-value"><span id="tot">0</span><span class="unit">thousand</span></span>
-          <span class="fig-sub">Demand <b id="dem-sum">98</b> · available capacity <b id="cap-sum">90</b></span>
+          <span class="fig-label">Total costs</span>
+          <span class="fig-value" id="tot">€0</span>
         </div>
         <p class="status" id="status" data-state="empty" aria-live="polite">
           <span class="status-icon" id="status-icon" aria-hidden="true"></span>
@@ -545,8 +550,15 @@ td.zero { color: var(--ink-3); }
         </p>
       </div>
       <ul class="issues" id="issues"></ul>
+      <p class="costs" id="costs"></p>
+      <dl class="cost-table">
+        <div><dt>Costs for additional links</dt><dd id="c-links">€0</dd></div>
+        <div><dt>Costs for unfulfilled demand</dt><dd id="c-short">€0</dd></div>
+        <div class="gap-row"><dt>Gap to optimal value</dt><dd id="c-gap">–</dd></div>
+      </dl>
+      <p class="plants-label short">Used / available capacity in thousand hours</p>
       <div class="plants" id="plants"></div>
-      <p class="panel-note">Available capacity = <span class="v">U<sub>j</sub></span> · (1 − <span class="v">A</span> · <span class="v">p<sub>j</sub></span>), rounded down, with additional links <span class="v">p<sub>j</sub></span> = number of models − <span class="v">N<sub>j</sub></span>.</p>
+      <p class="panel-note">Available capacity = 500,000 hours · (1 − 5&nbsp;% · additional links). Used capacity = Σ production × hours per car.</p>
     </section>
 
     <div class="actions" id="actions">
@@ -573,15 +585,14 @@ td.zero { color: var(--ink-3); }
         <p class="hint" id="hint"></p>
       </div>
       <div class="modes" role="group" aria-label="Decision to edit">
-        <button type="button" class="mode-btn" data-mode="alloc" aria-pressed="true"><span class="step">1</span>Allocation <span class="v">f<sub>ij</sub></span></button>
-        <button type="button" class="mode-btn" data-mode="prod" aria-pressed="false"><span class="step">2</span>Production <span class="v">x<sub>ij</sub></span></button>
+        <button type="button" class="mode-btn" data-mode="alloc" aria-pressed="true"><span class="step">1</span>Allocation</button>
+        <button type="button" class="mode-btn" data-mode="prod" aria-pressed="false"><span class="step">2</span>Production quantity</button>
       </div>
       <div class="legend" aria-hidden="true">
-        <span><i class="key key-init"></i>Initial allocation</span>
-        <span><i class="key key-new"></i>New link</span>
+        <span><i class="key key-init"></i>Initial allocation (fixed)</span>
+        <span><i class="key key-new"></i>Additional link</span>
         <span class="only-alloc"><i class="key key-off"></i>Not allocated</span>
-        <span><i class="key key-na"></i><span>Not possible (<span class="v">c<sub>ij</sub></span> = 0)</span></span>
-        <span class="only-prod"><i class="key key-low"></i><span>Outside <span class="v">M<sub>i</sub></span> … <span class="v">D<sub>i</sub></span></span></span>
+        <span class="only-prod"><i class="key key-short"></i>Unfulfilled demand</span>
       </div>
     </div>
     <div class="cols" aria-hidden="true"><span>Model</span><span>Plant 1</span><span>Plant 2</span><span>Plant 3</span><span>Produced</span></div>
@@ -590,17 +601,18 @@ td.zero { color: var(--ink-3); }
 
   <section class="data" aria-labelledby="data-h">
     <h2 id="data-h">Data</h2>
-    <p class="hint">The same data as in the Excel version, in the notation of the model. Quantities in thousand vehicles.</p>
+    <p class="hint">The same data as in the Excel version.</p>
     <div class="tables">
       <div class="tbl-block">
         <h3>Models</h3>
         <div class="tbl-scroll"><table id="tbl-models"></table></div>
-        <p class="tbl-note">Shaded: initial allocation. <span class="v">c<sub>ij</sub></span> = 1 if model <span class="v">i</span> can be built in plant <span class="v">j</span>.</p>
+        <p class="tbl-note">Demand in thousand cars. Shaded: initial allocation.</p>
       </div>
       <div class="tbl-block">
         <h3>Plants</h3>
         <div class="tbl-scroll"><table id="tbl-plants"></table></div>
-        <p class="tbl-note param">Efficiency loss per additional link: <b><span class="v">A</span> = 0.05</b></p>
+        <h3 style="margin-top:18px">Costs and efficiency loss</h3>
+        <div class="tbl-scroll"><table id="tbl-params"></table></div>
       </div>
     </div>
   </section>
@@ -615,41 +627,39 @@ td.zero { color: var(--ink-3); }
 (function () {
   'use strict';
 
-  /* ---- Game data (from NetworkPlanning_BusinessGame_Student.xlsx), quantities in thousand vehicles ---- */
-  var A = 0.05;                                   // efficiency loss per additional link
-  var MODELS = [                                  // i: demand D_i, minimum demand fulfilment M_i
-    { name: 'Up', D: 4, M: 2 }, { name: 'Polo', D: 15, M: 8 }, { name: 'Tiguan', D: 5, M: 3 },
-    { name: 'Golf', D: 7, M: 4 }, { name: 'Passat', D: 8, M: 5 }, { name: 'Touran', D: 9, M: 6 },
-    { name: 'Touareg', D: 14, M: 9 }, { name: 'Caddy', D: 12, M: 8 }, { name: 'Amarok', D: 14, M: 9 },
-    { name: 'T6', D: 10, M: 4 }
+  /* ---- Game data (from NetworkPlanning_BusinessGame_Student.xlsx) ---- */
+  var COST_SHORT = 100;            // costs for unfulfilled demand, € per car and needed hour (Excel: C2, weighted by hours per car)
+  var COST_LINK = 1000000;         // costs for adding one allocation, € (Excel: C3)
+  var A = 0.05;                    // efficiency loss per additional link (Excel: C4)
+  var OPTIMUM = 3000000;           // optimal total costs, used for the gap (Excel: H38)
+  var MODELS = [                   // demand in thousand cars, needed capacity per car in hours
+    { name: 'Up', D: 10, h: 10 }, { name: 'Polo', D: 10, h: 11 }, { name: 'Tiguan', D: 10, h: 12 },
+    { name: 'Golf', D: 10, h: 13 }, { name: 'Passat', D: 10, h: 14 }, { name: 'Touran', D: 10, h: 15 },
+    { name: 'Touareg', D: 10, h: 16 }, { name: 'Caddy', D: 10, h: 17 }, { name: 'Amarok', D: 10, h: 18 },
+    { name: 'T6', D: 10, h: 19 }
   ];
-  var PLANTS = [                                  // j: initial capacity U_j
-    { name: 'Plant 1', short: 'P1', U: 30 }, { name: 'Plant 2', short: 'P2', U: 30 }, { name: 'Plant 3', short: 'P3', U: 30 }
+  var PLANTS = [                   // capacity in hours
+    { name: 'Plant 1', short: 'P1', U: 500000 }, { name: 'Plant 2', short: 'P2', U: 500000 }, { name: 'Plant 3', short: 'P3', U: 500000 }
   ];
-  var INIT = [                                    // initial allocation, one row per plant (N_j = row sum)
+  var INIT = [                     // initial allocation, one row per plant; these links are fixed
     [1, 1, 1, 0, 0, 0, 0, 0, 0, 0],
     [0, 0, 0, 1, 1, 1, 0, 0, 0, 0],
     [0, 0, 0, 0, 0, 0, 1, 1, 1, 1]
   ];
-  var POSS = [                                    // allocation possibilities c_ij, one row per plant
-    [1, 1, 1, 0, 0, 1, 0, 0, 1, 1],
-    [1, 0, 1, 1, 1, 1, 1, 1, 0, 1],
-    [0, 1, 0, 1, 1, 1, 1, 1, 1, 1]
-  ];
-  var STORE_KEY = 'aip-network-planning-game-v1';
+  var STORE_KEY = 'aip-network-planning-game-v2';
+  var MAX_Q = 1000;                // upper bound for one input, thousand cars
 
   var NI = MODELS.length, NJ = PLANTS.length;
   var NINIT = INIT.map(function (row) { return row.reduce(function (s, v) { return s + v; }, 0); });
-  var EPS = 1e-9;
 
-  var f = [], x = [];          // decisions: f[j][i] in {0,1}, x[j][i] >= 0
+  var f = [], x = [];              // decisions: f[j][i] in {0,1}, x[j][i] whole thousands >= 0
   var mode = 'alloc';
-  var attempts = [];           // {no, f, x}
+  var attempts = [];               // {no, f, x}
   var nextNo = 1;
 
   var $ = function (id) { return document.getElementById(id); };
   var els = {
-    panel: $('panel'), tot: $('tot'), capSum: $('cap-sum'), demSum: $('dem-sum'),
+    tot: $('tot'), costs: $('costs'), cLinks: $('c-links'), cShort: $('c-short'), cGap: $('c-gap'),
     status: $('status'), statusIcon: $('status-icon'), statusShort: $('status-short'), statusLong: $('status-long'),
     issues: $('issues'), plants: $('plants'),
     plan: $('plan'), hint: $('hint'), rows: $('rows'),
@@ -661,16 +671,18 @@ td.zero { color: var(--ink-3); }
   var ICON_PLUS = '<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M6 2.2v7.6M2.2 6h7.6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>';
   var ICON_ALERT = '<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M6 2.2v4.6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="6" cy="9.6" r="1.1" fill="currentColor"/></svg>';
   var ICON_EMPTY = '<svg viewBox="0 0 12 12" aria-hidden="true"><circle cx="6" cy="6" r="3.4" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>';
-  var ICON_UP = '<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M6 9.6V2.6M3 5.4l3-3 3 3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
-  var ICON_DOWN = '<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M6 2.4v7M3 6.6l3 3 3-3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  var ICON_MINUS = '<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2.6 6h6.8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
+  var ICON_LOCK = '<svg viewBox="0 0 14 14" aria-hidden="true"><rect x="2.5" y="6.2" width="9" height="6.3" rx="1.4" fill="currentColor"/><path d="M4.6 6.2V4.4a2.4 2.4 0 0 1 4.8 0v1.8" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>';
 
   /* ---------- Helpers ---------- */
   function matrix(v) { return PLANTS.map(function () { return MODELS.map(function () { return v; }); }); }
   function copy(m) { return m.map(function (row) { return row.slice(); }); }
-  function round2(v) { return Math.round(v * 100) / 100; }
-  function fmt(v) { return round2(v).toLocaleString('en-US', { maximumFractionDigits: 2 }); }
+  function num(v) { return Math.round(v).toLocaleString('en-US'); }
+  function euro(v) { return (v < 0 ? '−€' : '€') + num(Math.abs(v)); }
+  function euroM(v) { return '€' + (v / 1e6).toLocaleString('en-US', { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + ' m'; }
+  function pct(v) { return (v * 100).toLocaleString('en-US', { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + ' %'; }
+  function kh(v) { return (v / 1000).toLocaleString('en-US', { maximumFractionDigits: 1 }); }
   function plural(n, one, many) { return n + ' ' + (n === 1 ? one : many); }
-  function signed(n) { return n > 0 ? '+' + n : n < 0 ? '−' + (-n) : '0'; }
 
   var toastTimer = null;
   function say(msg) {
@@ -681,27 +693,32 @@ td.zero { color: var(--ink-3); }
 
   /* ---------- The model: same formulas as the Excel sheet ---------- */
   function evaluate(F, X) {
-    var r = { links: [], p: [], cap: [], used: [], prod: [], total: 0, capSum: 0, issues: [] };
+    var r = { links: [], p: [], cap: [], used: [], prod: [], short: [], pSum: 0, shortSum: 0, issues: [], started: false };
     for (var j = 0; j < NJ; j++) {
       var links = 0, used = 0;
-      for (var i = 0; i < NI; i++) { links += F[j][i]; used += X[j][i]; }
-      var p = links - NINIT[j];                                        // additional links p_j
-      var cap = Math.floor(PLANTS[j].U * (1 - A * p) + EPS);           // ROUNDDOWN(U_j * (1 - A * p_j), 0)
-      r.links.push(links); r.p.push(p); r.cap.push(cap); r.used.push(round2(used));
-      r.total += used; r.capSum += cap;
+      for (var i = 0; i < NI; i++) { links += F[j][i]; used += MODELS[i].h * X[j][i] * 1000; if (X[j][i] > 0) r.started = true; }
+      var p = links - NINIT[j];                                   // additional links (N21:N23)
+      r.links.push(links); r.p.push(p);
+      r.cap.push(PLANTS[j].U * (1 - p * A));                      // available capacity (O21:O23)
+      r.used.push(used);                                          // used capacity (M27:M29)
+      r.pSum += p;
     }
-    r.total = round2(r.total);
+    var shortHours = 0;
     for (var m = 0; m < NI; m++) {
       var s = 0;
       for (var k = 0; k < NJ; k++) s += X[k][m];
-      r.prod.push(round2(s));
+      r.prod.push(s);
+      var u = Math.max(0, MODELS[m].D - s);                       // unfulfilled demand (C31:L31)
+      r.short.push(u);
+      r.shortSum += u;
+      shortHours += MODELS[m].h * u;
     }
+    r.costLinks = r.pSum * COST_LINK;                             // H35
+    r.costShort = shortHours * COST_SHORT * 1000;                 // H36
+    r.total = r.costLinks + r.costShort;                          // H37
+    r.gap = (r.total - OPTIMUM) / OPTIMUM;                        // H38
     r.cap.forEach(function (cap, j) {
-      if (r.used[j] > cap + EPS) r.issues.push(PLANTS[j].name + ' is over capacity by ' + fmt(r.used[j] - cap) + '.');
-    });
-    MODELS.forEach(function (mo, i) {
-      if (r.prod[i] < mo.M - EPS) r.issues.push(mo.name + ' is ' + fmt(mo.M - r.prod[i]) + ' below its minimum of ' + mo.M + '.');
-      else if (r.prod[i] > mo.D + EPS) r.issues.push(mo.name + ' is ' + fmt(r.prod[i] - mo.D) + ' above its demand of ' + mo.D + '.');
+      if (r.used[j] > cap + 1e-6) r.issues.push(PLANTS[j].name + ' uses ' + num(r.used[j] - cap) + ' hours more than available.');
     });
     r.feasible = r.issues.length === 0;
     return r;
@@ -713,7 +730,7 @@ td.zero { color: var(--ink-3); }
     if (!Array.isArray(m)) return out;
     for (var j = 0; j < NJ; j++) for (var i = 0; i < NI; i++) {
       var v = m[j] && m[j][i];
-      out[j][i] = POSS[j][i] && (v === 1 || v === '1' || v === true) ? 1 : 0;
+      if (v === 1 || v === '1' || v === true) out[j][i] = 1;
     }
     return out;
   }
@@ -722,7 +739,7 @@ td.zero { color: var(--ink-3); }
     if (!Array.isArray(m)) return out;
     for (var j = 0; j < NJ; j++) for (var i = 0; i < NI; i++) {
       var v = parseFloat(m[j] && m[j][i]);
-      out[j][i] = F[j][i] && isFinite(v) && v > 0 ? round2(Math.min(v, 1e6)) : 0;
+      out[j][i] = F[j][i] && isFinite(v) && v > 0 ? Math.min(Math.round(v), MAX_Q) : 0;
     }
     return out;
   }
@@ -750,19 +767,19 @@ td.zero { color: var(--ink-3); }
     return '#f=' + F.map(function (row) { return row.join(''); }).join('.') +
       '&x=' + X.map(function (row) { return row.map(function (v) { return v ? String(v) : ''; }).join(','); }).join('_');
   }
-  function writeHash() {
-    var isStart = sameMatrix(f, INIT) && sameMatrix(x, matrix(0));
-    var h = isStart ? '' : hashFor(f, x);
-    try { history.replaceState(null, '', location.pathname + location.search + h); } catch (e) { /* ignore */ }
-  }
   function sameMatrix(a, b) {
     for (var j = 0; j < NJ; j++) for (var i = 0; i < NI; i++) if (a[j][i] !== b[j][i]) return false;
     return true;
   }
+  function isStart() { return sameMatrix(f, INIT) && sameMatrix(x, matrix(0)); }
+  function writeHash() {
+    var h = isStart() ? '' : hashFor(f, x);
+    try { history.replaceState(null, '', location.pathname + location.search + h); } catch (e) { /* ignore */ }
+  }
 
   /* ---------- Build the static parts ---------- */
   var cells = [];        // cells[j][i] -> container element
-  var rowEls = [];       // per model: {li, fill, zone, min, val, icon}
+  var rowEls = [];
   var plantEls = [];
 
   function buildRows() {
@@ -773,7 +790,7 @@ td.zero { color: var(--ink-3); }
       li.className = 'mrow';
       li.innerHTML =
         '<div class="m-head"><span class="m-name">' + mo.name + '</span>' +
-        '<span class="m-dem">min <b>' + mo.M + '</b> · demand <b>' + mo.D + '</b></span></div>';
+        '<span class="m-dem"><span class="nowrap">demand <b>' + mo.D + '</b></span><span class="dot"> · </span><span class="nowrap"><b>' + mo.h + '</b> h/car</span></span></div>';
       for (var j = 0; j < NJ; j++) {
         var c = document.createElement('div');
         c.className = 'cell';
@@ -785,12 +802,12 @@ td.zero { color: var(--ink-3); }
       sum.className = 'm-sum';
       sum.innerHTML =
         '<span class="m-icon" aria-hidden="true"></span>' +
-        '<div class="m-meter" aria-hidden="true"><div class="m-track"><span class="m-zone"></span><span class="m-fill"></span><span class="m-min"></span></div></div>' +
+        '<div class="m-meter"><div class="m-track" aria-hidden="true"><span class="m-fill"></span><span class="m-dline"></span></div><div class="m-note"><span class="n-long"></span><span class="n-short"></span></div></div>' +
         '<span class="m-val"><b>0</b> / ' + mo.D + '</span>';
       li.appendChild(sum);
       rowEls.push({
-        li: li, icon: sum.querySelector('.m-icon'), zone: sum.querySelector('.m-zone'),
-        fill: sum.querySelector('.m-fill'), min: sum.querySelector('.m-min'), val: sum.querySelector('.m-val')
+        li: li, icon: sum.querySelector('.m-icon'), fill: sum.querySelector('.m-fill'),
+        dline: sum.querySelector('.m-dline'), noteL: sum.querySelector('.n-long'), noteS: sum.querySelector('.n-short'), val: sum.querySelector('.m-val')
       });
       frag.appendChild(li);
     });
@@ -798,51 +815,51 @@ td.zero { color: var(--ink-3); }
   }
 
   function buildPlants() {
-    PLANTS.forEach(function (pl) {
+    PLANTS.forEach(function () {
       var d = document.createElement('div');
       d.className = 'plant';
       d.innerHTML =
-        '<div class="pl-top"><span class="pl-name">' + pl.name + '</span><span class="pl-num"><b>0</b> / <span class="pl-cap-n">' + pl.U + '</span></span></div>' +
+        '<div class="pl-top"><span class="pl-name"></span><span class="pl-num"></span></div>' +
         '<div class="pl-track"><span class="pl-fill"></span><span class="pl-cap"></span></div>' +
         '<div class="pl-sub"></div>';
       els.plants.appendChild(d);
-      plantEls.push({ el: d, used: d.querySelector('.pl-num b'), capN: d.querySelector('.pl-cap-n'),
+      plantEls.push({ el: d, name: d.querySelector('.pl-name'), num: d.querySelector('.pl-num'),
         fill: d.querySelector('.pl-fill'), cap: d.querySelector('.pl-cap'), sub: d.querySelector('.pl-sub') });
     });
+    plantEls.forEach(function (pe, j) { pe.name.textContent = PLANTS[j].name; });
   }
 
   function buildTables() {
-    var h = '<thead><tr><th scope="col">Model <span class="v">i</span></th><th scope="col"><span class="v">D<sub>i</sub></span></th><th scope="col"><span class="v">M<sub>i</sub></span></th>';
-    PLANTS.forEach(function (pl, j) { h += '<th scope="col"><span class="v">c<sub>i' + (j + 1) + '</sub></span></th>'; });
+    var h = '<thead><tr><th scope="col">Model</th><th scope="col">Demand</th><th scope="col">Hours<br>per car</th>';
+    PLANTS.forEach(function (pl) { h += '<th scope="col">' + pl.short + '</th>'; });
     h += '</tr></thead><tbody>';
     MODELS.forEach(function (mo, i) {
-      h += '<tr><th scope="row">' + mo.name + '</th><td>' + mo.D + '</td><td>' + mo.M + '</td>';
-      PLANTS.forEach(function (pl, j) {
-        var cls = INIT[j][i] ? 'init' : (POSS[j][i] ? '' : 'zero');
-        h += '<td class="' + cls + '">' + POSS[j][i] + '</td>';
-      });
+      h += '<tr><th scope="row">' + mo.name + '</th><td>' + mo.D + '</td><td>' + mo.h + '</td>';
+      PLANTS.forEach(function (pl, j) { h += '<td class="' + (INIT[j][i] ? 'init' : 'zero') + '">' + INIT[j][i] + '</td>'; });
       h += '</tr>';
     });
-    var dSum = MODELS.reduce(function (s, m) { return s + m.D; }, 0);
-    var mSum = MODELS.reduce(function (s, m) { return s + m.M; }, 0);
-    h += '<tr><th scope="row">Sum</th><td>' + dSum + '</td><td>' + mSum + '</td><td></td><td></td><td></td></tr></tbody>';
+    h += '</tbody>';
     $('tbl-models').innerHTML = h;
-    els.demSum.textContent = dSum;
 
-    var p = '<thead><tr><th scope="col">Plant <span class="v">j</span></th><th scope="col">Initial models <span class="v">N<sub>j</sub></span></th><th scope="col">Initial capacity <span class="v">U<sub>j</sub></span></th></tr></thead><tbody>';
+    var p = '<thead><tr><th scope="col">Plant</th><th scope="col">Initial models</th><th scope="col">Capacity (hours)</th></tr></thead><tbody>';
     PLANTS.forEach(function (pl, j) {
       var names = MODELS.filter(function (m, i) { return INIT[j][i]; }).map(function (m) { return m.name; }).join(', ');
-      p += '<tr><th scope="row">' + pl.name + '</th><td title="' + names + '">' + NINIT[j] + '</td><td>' + pl.U + '</td></tr>';
+      p += '<tr><th scope="row">' + pl.name + '</th><td title="' + names + '">' + NINIT[j] + '</td><td>' + num(pl.U) + '</td></tr>';
     });
     p += '</tbody>';
     $('tbl-plants').innerHTML = p;
+
+    $('tbl-params').innerHTML = '<tbody>' +
+      '<tr><th scope="row">Costs for adding one allocation</th><td>' + euro(COST_LINK) + '</td></tr>' +
+      '<tr><th scope="row">Costs for unfulfilled demand<br>(per car and needed hour)</th><td>' + euro(COST_SHORT) + '</td></tr>' +
+      '<tr><th scope="row">Efficiency loss per additional link</th><td>' + (A * 100) + ' %</td></tr>' +
+      '</tbody>';
   }
 
   /* ---------- Cells ---------- */
   function stateOf(j, i) {
-    if (!POSS[j][i]) return 'na';
-    if (f[j][i]) return INIT[j][i] ? 'init' : 'new';
-    return INIT[j][i] ? 'removed' : 'off';
+    if (INIT[j][i]) return 'init';
+    return f[j][i] ? 'new' : 'off';
   }
 
   function renderCell(j, i) {
@@ -852,14 +869,13 @@ td.zero { color: var(--ink-3); }
     var label = '<span class="c-plant">' + pl.short + '</span>';
     box.className = 'cell is-' + st;
 
-    if (st === 'na') {
-      if (!box.querySelector('.c-na')) {
-        box.innerHTML = '<div class="c-na">' + label + '<span class="c-text">not possible</span></div>';
-      }
-      return;
-    }
-
     if (mode === 'alloc') {
+      if (st === 'init') {
+        box.innerHTML = '<div class="c-lock" role="img" aria-label="' + mo.name + ' in ' + pl.name + ': initial allocation, fixed">' +
+          label + '<span class="c-mark" aria-hidden="true">' + ICON_LOCK + '</span><span class="c-tag">initial' +
+          (x[j][i] > 0 ? ' · ' + x[j][i] : '') + '</span></div>';
+        return;
+      }
       var b = box.querySelector('.c-btn');
       if (!b) {
         box.innerHTML = '';
@@ -870,11 +886,9 @@ td.zero { color: var(--ink-3); }
         box.appendChild(b);
       }
       var on = f[j][i] === 1;
-      var tag = st === 'init' ? 'initial' : st === 'new' ? 'new link' : st === 'removed' ? 'initially here' : 'add';
-      if (on && x[j][i] > 0) tag += ' · ' + fmt(x[j][i]);
+      var tag = on ? 'additional link' + (x[j][i] > 0 ? ' · ' + x[j][i] : '') : 'add';
       b.setAttribute('aria-pressed', on ? 'true' : 'false');
-      b.setAttribute('aria-label', mo.name + ' in ' + pl.name + ': ' +
-        (on ? (st === 'init' ? 'allocated, initial allocation' : 'allocated, new link') : 'not allocated'));
+      b.setAttribute('aria-label', mo.name + ' in ' + pl.name + ': ' + (on ? 'additional link' : 'not allocated'));
       b.innerHTML = label + '<span class="c-mark" aria-hidden="true">' + (on ? ICON_CHECK : ICON_PLUS) + '</span><span class="c-tag">' + tag + '</span>';
       return;
     }
@@ -887,12 +901,13 @@ td.zero { color: var(--ink-3); }
         inp = document.createElement('input');
         inp.type = 'number';
         inp.min = '0';
+        inp.max = String(MAX_Q);
         inp.step = '1';
-        inp.inputMode = 'decimal';
+        inp.inputMode = 'numeric';
         inp.placeholder = '0';
         inp.autocomplete = 'off';
         inp.dataset.j = j; inp.dataset.i = i;
-        inp.setAttribute('aria-label', mo.name + ' in ' + pl.name + ', production quantity in thousand vehicles');
+        inp.setAttribute('aria-label', mo.name + ' in ' + pl.name + ', production quantity in thousand cars');
         box.firstChild.appendChild(inp);
       }
       if (document.activeElement !== inp) inp.value = x[j][i] ? String(x[j][i]) : '';
@@ -911,101 +926,98 @@ td.zero { color: var(--ink-3); }
     els.plan.querySelectorAll('.mode-btn').forEach(function (b) {
       b.setAttribute('aria-pressed', b.dataset.mode === m ? 'true' : 'false');
     });
-    els.hint.innerHTML = m === 'alloc'
-      ? 'Tap a cell to let a plant produce a model (<span class="v">f<sub>ij</sub></span> = 1), tap again to remove it. Then switch to Production.'
-      : 'Enter the production quantity <span class="v">x<sub>ij</sub></span> in thousand vehicles. Only allocated cells can produce.';
+    els.hint.textContent = m === 'alloc'
+      ? 'Tap a cell to add a link between a plant and a model, tap again to remove it. The initial allocation is fixed. Then switch to Production quantity.'
+      : 'Enter the production quantity in thousand cars (whole numbers). Only allocated cells can produce.';
     renderAllCells();
   }
 
   /* ---------- Render results ---------- */
   function render() {
     var r = evaluate(f, x);
-    var started = r.total > 0;
 
-    els.tot.textContent = fmt(r.total);
-    els.capSum.textContent = r.capSum;
+    els.tot.textContent = euro(r.total);
+    els.cLinks.textContent = euro(r.costLinks);
+    els.cShort.textContent = euro(r.costShort);
+    els.cGap.textContent = r.feasible ? pct(r.gap) : '– (not feasible)';
+    els.costs.innerHTML = 'Links <b>' + euroM(r.costLinks) + '</b><span class="sep">·</span>Unfulfilled <b>' +
+      euroM(r.costShort) + '</b><span class="sep">·</span>Gap <b>' + (r.feasible ? pct(r.gap) : '–') + '</b>';
 
     // plants
     plantEls.forEach(function (pe, j) {
-      var cap = r.cap[j], used = r.used[j], over = used > cap + EPS;
+      var cap = r.cap[j], used = r.used[j], over = used > cap + 1e-6;
       var scale = Math.max(cap, used, 1);
       pe.el.classList.toggle('is-over', over);
-      pe.used.textContent = fmt(used);
-      pe.capN.textContent = cap;
+      pe.num.innerHTML = '<span class="short"><b>' + kh(used) + '</b> / ' + kh(cap) + '</span>' +
+        '<span class="long"><b>' + num(used) + '</b> / ' + num(cap) + ' h</span>';
       pe.fill.style.width = (used / scale * 100) + '%';
       pe.cap.style.left = (cap / scale * 100) + '%';
-      var p = r.p[j], diff = cap - PLANTS[j].U;
-      var capTxt = diff < 0 ? '<span class="loss">capacity ' + signed(diff) + '</span>' : diff > 0 ? '<span class="gain">capacity ' + signed(diff) + '</span>' : '';
-      pe.sub.innerHTML = plural(r.links[j], 'model', 'models') + ' · <span class="v">p</span> = ' + signed(p) +
-        (capTxt ? '<span class="pl-long"> · ' + capTxt + '</span>' : '');
+      var p = r.p[j];
+      pe.sub.innerHTML = p > 0
+        ? '<span class="short">+' + p + ' link' + (p === 1 ? '' : 's') + '</span><span class="long">' + plural(p, 'additional link', 'additional links') +
+          ' · <span class="loss">capacity −' + Math.round(p * A * 100) + ' %</span></span>'
+        : '<span class="short">no new links</span><span class="long">No additional links</span>';
     });
 
     // models
     MODELS.forEach(function (mo, i) {
-      var re = rowEls[i], v = r.prod[i];
-      var st = !started ? 'idle' : v < mo.M - EPS ? 'low' : v > mo.D + EPS ? 'high' : 'ok';
-      re.li.classList.remove('is-idle', 'is-low', 'is-ok', 'is-high');
+      var re = rowEls[i], v = r.prod[i], u = r.short[i];
+      var st = !r.started ? 'idle' : u > 0 ? 'short' : v > mo.D ? 'over' : 'ok';
+      re.li.classList.remove('is-idle', 'is-short', 'is-ok', 'is-over');
       re.li.classList.add('is-' + st);
       var scale = Math.max(mo.D, v);
-      re.zone.style.left = (mo.M / scale * 100) + '%';
-      re.zone.style.width = ((mo.D - mo.M) / scale * 100) + '%';
-      re.min.style.left = (mo.M / scale * 100) + '%';
       re.fill.style.width = (v / scale * 100) + '%';
-      re.val.innerHTML = '<b>' + fmt(v) + '</b> / ' + mo.D;
-      re.icon.innerHTML = st === 'ok' ? ICON_CHECK : st === 'low' ? ICON_UP : st === 'high' ? ICON_DOWN : ICON_EMPTY;
-      re.li.setAttribute('aria-label', mo.name + ': produced ' + fmt(v) + ', minimum ' + mo.M + ', demand ' + mo.D);
+      re.dline.style.left = (mo.D / scale * 100) + '%';
+      re.val.innerHTML = '<b>' + v + '</b> / ' + mo.D;
+      re.icon.innerHTML = st === 'ok' || st === 'over' ? ICON_CHECK : st === 'short' ? ICON_MINUS : ICON_EMPTY;
+      var note = '', noteS = '';
+      if (st === 'short') { note = u + ' thousand unfulfilled · ' + euroM(mo.h * u * COST_SHORT * 1000); noteS = '−' + u + ' · ' + euroM(mo.h * u * COST_SHORT * 1000); }
+      else if (st === 'ok') { note = 'Demand fulfilled'; noteS = 'fulfilled'; }
+      else if (st === 'over') { note = (v - mo.D) + ' thousand above demand'; noteS = '+' + (v - mo.D) + ' above'; }
+      else { note = 'Not produced yet'; noteS = '–'; }
+      re.noteL.textContent = note;
+      re.noteS.textContent = noteS;
+      re.li.setAttribute('aria-label', mo.name + ': produced ' + v + ' of ' + mo.D + ' thousand. ' + note);
     });
 
     // status
     var state, short, long, icon;
-    if (!started) {
+    if (!r.feasible) {
+      state = 'bad'; icon = ICON_ALERT;
+      short = 'Not feasible';
+      long = r.issues.length === 1 ? 'Not feasible: 1 plant is over capacity.' : 'Not feasible: ' + r.issues.length + ' plants are over capacity.';
+    } else if (!r.started) {
       state = 'empty'; icon = ICON_EMPTY;
       short = 'No production yet';
       long = 'No production planned yet.';
-    } else if (r.feasible) {
+    } else {
       state = 'ok'; icon = ICON_CHECK;
       short = 'Feasible';
-      long = 'Feasible plan. All constraints are met.';
-    } else {
-      state = 'bad'; icon = ICON_ALERT;
-      short = plural(r.issues.length, 'issue', 'issues');
-      long = r.issues.length === 1 ? 'Not feasible: 1 constraint is violated.' : 'Not feasible: ' + r.issues.length + ' constraints are violated.';
+      long = 'Feasible plan.';
     }
     els.status.dataset.state = state;
     els.statusIcon.innerHTML = icon;
     els.statusShort.textContent = short;
     els.statusLong.textContent = long;
     els.issues.innerHTML = '';
-    if (started) {
-      r.issues.slice(0, 8).forEach(function (t) {
-        var li = document.createElement('li'); li.textContent = t; els.issues.appendChild(li);
-      });
-      if (r.issues.length > 8) {
-        var more = document.createElement('li'); more.textContent = 'and ' + (r.issues.length - 8) + ' more.'; els.issues.appendChild(more);
-      }
-    }
+    r.issues.forEach(function (t) {
+      var li = document.createElement('li'); li.textContent = t; els.issues.appendChild(li);
+    });
 
-    var isStart = sameMatrix(f, INIT) && sameMatrix(x, matrix(0));
-    els.save.disabled = !started;
-    els.reset.disabled = isStart;
+    els.save.disabled = !r.started && sameMatrix(f, INIT);
+    els.reset.disabled = isStart();
     writeHash();
     saveStore();
   }
 
   /* ---------- Attempts ---------- */
-  function extraLinks(F) {
-    var n = 0;
-    for (var j = 0; j < NJ; j++) for (var i = 0; i < NI; i++) if (F[j][i] && !INIT[j][i]) n++;
-    return n;
-  }
-
   function renderAttempts() {
-    var bestNo = null, bestT = -1;
+    var bestNo = null, bestT = Infinity;
     var evals = {};
     attempts.forEach(function (a) {
       var r = evaluate(a.f, a.x);
       evals[a.no] = r;
-      if (r.feasible && r.total > bestT) { bestT = r.total; bestNo = a.no; }
+      if (r.feasible && r.total < bestT) { bestT = r.total; bestNo = a.no; }
     });
     els.list.innerHTML = '';
     attempts.slice().reverse().forEach(function (a) {
@@ -1014,14 +1026,13 @@ td.zero { color: var(--ink-3); }
       li.className = 'attempt' + (a.no === bestNo ? ' best' : '') + (!r.feasible ? ' bad' : '');
       var badge = a.no === bestNo ? '<span class="badge">Best so far</span>'
         : (!r.feasible ? '<span class="badge bad">Not feasible</span>' : '');
-      var ex = extraLinks(a.f);
       li.innerHTML =
         '<div class="attempt-top">' +
           '<span class="attempt-name">Attempt ' + a.no + badge + '</span>' +
-          '<span class="attempt-figs"><b>' + fmt(r.total) + '</b> thousand</span>' +
+          '<span class="attempt-figs"><b>' + euro(r.total) + '</b></span>' +
         '</div>' +
-        '<div class="attempt-info">' + plural(ex, 'new link', 'new links') + ' · capacity ' + r.capSum +
-          (r.feasible ? '' : ' · ' + plural(r.issues.length, 'issue', 'issues')) + '</div>' +
+        '<div class="attempt-info"><span class="nowrap">' + plural(r.pSum, 'additional link', 'additional links') + '</span> · ' +
+          '<span class="nowrap">' + r.shortSum + ' thousand unfulfilled</span>' + (r.feasible ? ' · <span class="nowrap">gap ' + pct(r.gap) + '</span>' : '') + '</div>' +
         '<div class="attempt-actions">' +
           '<button type="button" class="link-btn" data-act="load" data-no="' + a.no + '">Load</button>' +
           '<button type="button" class="link-btn" data-act="del" data-no="' + a.no + '">Delete</button>' +
@@ -1070,11 +1081,11 @@ td.zero { color: var(--ink-3); }
     var b = e.target.closest('.c-btn');
     if (!b) return;
     var j = +b.dataset.j, i = +b.dataset.i;
-    if (!POSS[j][i]) return;
+    if (INIT[j][i]) return;
     if (f[j][i]) {
       f[j][i] = 0;
       if (x[j][i] > 0) {
-        say('Removed ' + MODELS[i].name + ' from ' + PLANTS[j].name + ', including its production of ' + fmt(x[j][i]) + '.');
+        say('Removed the link ' + MODELS[i].name + ' – ' + PLANTS[j].name + ', including its production of ' + x[j][i] + ' thousand.');
         x[j][i] = 0;
       }
     } else {
@@ -1089,7 +1100,7 @@ td.zero { color: var(--ink-3); }
     if (inp.tagName !== 'INPUT') return;
     var j = +inp.dataset.j, i = +inp.dataset.i;
     var v = parseFloat(inp.value);
-    x[j][i] = isFinite(v) && v > 0 ? round2(Math.min(v, 1e6)) : 0;
+    x[j][i] = isFinite(v) && v > 0 ? Math.min(Math.round(v), MAX_Q) : 0;
     render();
   });
   els.rows.addEventListener('change', function (e) {
