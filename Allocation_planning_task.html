@@ -1,0 +1,1366 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Allocation Planning Task</title>
+<meta name="description" content="OMAI Task 1: evaluate product–plant allocations at AIP Inc. with the allocation planning model from the lecture.">
+<meta name="theme-color" content="#005374">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fira+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --brand: #005374;
+  --heading: #005374;
+  --logo-ink: #005374;
+  --paper: #F1F5F7;
+  --surface: #FFFFFF;
+  --ink: #102B36;
+  --ink-2: #44606B;
+  --ink-3: #657E88;
+  --line: #D3E0E5;
+  --line-strong: #A9C0C9;
+  --track: #E3ECEF;
+  --fill: #0F77A0;
+  --init: #005374;
+  --init-tint: #E2EEF3;
+  --new: #1B7444;
+  --new-tint: #E1F2E8;
+  --on-ink: #FFFFFF;
+  --on-sub: #D2E7EE;
+  --ok: #1B7444;
+  --ok-bg: #E1F2E8;
+  --warn: #A9530A;
+  --warn-fill: #D9822B;
+  --warn-bg: #FCEBDA;
+  --danger: #BF311C;
+  --danger-bg: #FBE6E2;
+  --neutral-bg: #E3ECEF;
+  --focus: #F37427;
+  --gutter: 16px;
+  --font: "Fira Sans", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --brand: #4FB0D3;
+    --heading: #8FD0EA;
+    --logo-ink: #D6E8EE;
+    --paper: #0B1D24;
+    --surface: #12303B;
+    --ink: #E6F0F3;
+    --ink-2: #A9C0C8;
+    --ink-3: #8AA3AD;
+    --line: #22495A;
+    --line-strong: #36667C;
+    --track: #1B3E4B;
+    --fill: #2E95BC;
+    --init: #1A6E90;
+    --init-tint: #163A48;
+    --new: #237A4C;
+    --new-tint: #143A2A;
+    --on-ink: #FFFFFF;
+    --on-sub: #CFE6EE;
+    --ok: #62CD93;
+    --ok-bg: #133A2A;
+    --warn: #F2A65A;
+    --warn-fill: #D9822B;
+    --warn-bg: #43301C;
+    --danger: #FF7D69;
+    --danger-bg: #45211B;
+    --neutral-bg: #1B3E4B;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --brand: #4FB0D3;
+  --heading: #8FD0EA;
+  --logo-ink: #D6E8EE;
+  --paper: #0B1D24;
+  --surface: #12303B;
+  --ink: #E6F0F3;
+  --ink-2: #A9C0C8;
+  --ink-3: #8AA3AD;
+  --line: #22495A;
+  --line-strong: #36667C;
+  --track: #1B3E4B;
+  --fill: #2E95BC;
+  --init: #1A6E90;
+  --init-tint: #163A48;
+  --new: #237A4C;
+  --new-tint: #143A2A;
+  --on-ink: #FFFFFF;
+  --on-sub: #CFE6EE;
+  --ok: #62CD93;
+  --ok-bg: #133A2A;
+  --warn: #F2A65A;
+  --warn-fill: #D9822B;
+  --warn-bg: #43301C;
+  --danger: #FF7D69;
+  --danger-bg: #45211B;
+  --neutral-bg: #1B3E4B;
+  color-scheme: dark;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font);
+  font-size: 1rem;
+  line-height: 1.5;
+  font-variant-numeric: tabular-nums;
+  -webkit-font-smoothing: antialiased;
+}
+button, input { font: inherit; color: inherit; }
+h1, h2, h3, p { margin: 0; }
+:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+.nowrap { white-space: nowrap; }
+
+.wrap {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding-left: max(var(--gutter), env(safe-area-inset-left));
+  padding-right: max(var(--gutter), env(safe-area-inset-right));
+}
+
+/* ---------- Header ---------- */
+.masthead { padding-top: 20px; padding-bottom: 8px; }
+.logo { display: block; height: 40px; width: auto; color: var(--logo-ink); }
+.title {
+  margin-top: 28px;
+  font-size: clamp(2rem, 1.35rem + 2.8vw, 3.25rem);
+  line-height: 1.04;
+  font-weight: 700;
+  letter-spacing: -0.018em;
+  color: var(--heading);
+}
+
+/* ---------- Layout ---------- */
+.layout {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding-top: 16px;
+  padding-bottom: 40px;
+}
+.side { display: contents; }
+.task { order: 1; }
+.panel { order: 2; }
+.plan { order: 3; }
+.actions { order: 4; }
+.attempts { order: 5; }
+.data { order: 6; }
+
+/* ---------- Task text ---------- */
+.task p { max-width: 66ch; color: var(--ink-2); font-size: 1.0625rem; }
+.task p + p { margin-top: .75em; }
+.task .lead { color: var(--ink); font-size: 1.25rem; line-height: 1.4; font-weight: 500; max-width: 46ch; }
+
+h2 { font-size: 1.25rem; line-height: 1.2; font-weight: 600; color: var(--ink); }
+
+/* ---------- Results panel ---------- */
+.panel {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  margin-left: calc(-1 * var(--gutter));
+  margin-right: calc(-1 * var(--gutter));
+  padding: 10px var(--gutter) 12px;
+  background: var(--surface);
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  box-shadow: 0 6px 16px -12px rgba(0, 40, 56, .45);
+}
+.panel-head { display: none; }
+.figures { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.fig { display: flex; flex-direction: column; min-width: 0; }
+.fig-label { font-size: .8125rem; color: var(--ink-3); line-height: 1.2; }
+.fig-value { font-size: 1.75rem; font-weight: 600; line-height: 1.15; letter-spacing: -0.01em; white-space: nowrap; }
+
+.status { display: flex; align-items: center; gap: 8px; font-size: .9375rem; font-weight: 500; min-width: 0; }
+.status-icon {
+  flex: none; width: 20px; height: 20px; border-radius: 50%;
+  display: grid; place-items: center;
+  background: var(--neutral-bg); color: var(--ink-2);
+}
+.status-icon svg { width: 12px; height: 12px; }
+.status[data-state="ok"] .status-icon { background: var(--ok-bg); color: var(--ok); }
+.status[data-state="ok"] { color: var(--ok); }
+.status[data-state="bad"] .status-icon { background: var(--danger-bg); color: var(--danger); }
+.status[data-state="bad"] { color: var(--danger); }
+.figures .status { flex: 0 1 auto; justify-content: flex-end; text-align: right; font-size: .875rem; line-height: 1.25; }
+.status-long { display: none; }
+.issues { display: none; }
+
+.costs { margin: 4px 0 0; font-size: .8125rem; color: var(--ink-3); line-height: 1.35; }
+.costs b { font-weight: 600; color: var(--ink-2); }
+.costs .sep { margin: 0 4px; }
+.cost-table { display: none; }
+
+.plants-label { margin-top: 6px; font-size: .75rem; color: var(--ink-3); }
+.plants { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin-top: 2px; }
+.plant { min-width: 0; }
+.pl-top { display: flex; align-items: baseline; justify-content: space-between; gap: 6px; font-size: .8125rem; }
+.pl-name { font-weight: 600; color: var(--ink); white-space: nowrap; }
+.pl-num { white-space: nowrap; color: var(--ink-3); }
+.pl-num b { font-weight: 600; color: var(--ink); }
+.plant.is-over .pl-num b { color: var(--danger); }
+.pl-track { position: relative; height: 8px; margin-top: 4px; border-radius: 4px; background: var(--track); overflow: hidden; }
+.pl-fill { position: absolute; left: 0; top: 0; bottom: 0; width: 0; background: var(--fill); border-radius: 0 4px 4px 0; transition: width .25s cubic-bezier(.2, .7, .2, 1); }
+.plant.is-over .pl-fill { background: var(--danger); }
+.pl-cap { position: absolute; top: 0; bottom: 0; width: 2px; margin-left: -1px; background: var(--ink); display: none; }
+.plant.is-over .pl-cap { display: block; }
+.pl-sub { margin-top: 3px; font-size: .75rem; line-height: 1.3; color: var(--ink-3); }
+.pl-sub .loss { color: var(--warn); }
+.long { display: none; }
+.panel-note { display: none; }
+
+/* ---------- Actions ---------- */
+.actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.actions .btn { flex: 1 1 auto; }
+.btn {
+  appearance: none;
+  border: 1px solid var(--line-strong);
+  background: var(--surface);
+  color: var(--ink);
+  border-radius: 8px;
+  padding: 9px 14px;
+  min-height: 44px;
+  font-size: .9375rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color .15s, border-color .15s;
+}
+.btn:hover:not(:disabled) { border-color: var(--brand); }
+.btn:disabled { opacity: .45; cursor: not-allowed; }
+.btn.armed { border-color: var(--danger); color: var(--danger); }
+.btn-primary { background: var(--brand); border-color: var(--brand); color: #fff; }
+:root[data-theme="dark"] .btn-primary { color: #06212B; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .btn-primary { color: #06212B; } }
+.btn-primary:hover:not(:disabled) { filter: brightness(1.08); }
+.toast { flex-basis: 100%; min-height: 1.4em; font-size: .875rem; color: var(--ink-2); }
+.share-field {
+  flex-basis: 100%; width: 100%; padding: 8px 10px; border-radius: 8px;
+  border: 1px solid var(--line-strong); background: var(--surface); color: var(--ink);
+  font: inherit; font-size: .875rem;
+}
+
+/* ---------- Decisions ---------- */
+.plan { container-type: inline-size; }
+.plan-head { display: flex; flex-direction: column; gap: 10px; margin-bottom: 12px; }
+.hint { font-size: .9375rem; color: var(--ink-2); max-width: 64ch; }
+.modes {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 4px; padding: 4px;
+  border-radius: 10px; background: var(--track); max-width: 460px;
+}
+.mode-btn {
+  appearance: none; border: 0; border-radius: 7px; background: transparent;
+  min-height: 44px; padding: 6px 10px; cursor: pointer;
+  font-size: .9375rem; font-weight: 500; color: var(--ink-2); line-height: 1.2;
+}
+.mode-btn .step { display: inline-grid; place-items: center; width: 20px; height: 20px; margin-right: 6px; border-radius: 50%; font-size: .75rem; font-weight: 600; background: var(--line); color: var(--ink-2); vertical-align: 1px; }
+.mode-btn[aria-pressed="true"] { background: var(--surface); color: var(--ink); box-shadow: 0 1px 3px rgba(0, 40, 56, .18); }
+.mode-btn[aria-pressed="true"] .step { background: var(--brand); color: #fff; }
+:root[data-theme="dark"] .mode-btn[aria-pressed="true"] .step { color: #06212B; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .mode-btn[aria-pressed="true"] .step { color: #06212B; } }
+
+.legend { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: .8125rem; color: var(--ink-2); }
+.legend > span { display: inline-flex; align-items: center; gap: 6px; }
+.key { display: inline-block; width: 14px; height: 14px; border-radius: 4px; }
+.key-init { background: var(--init); }
+.key-new { background: var(--new); }
+.key-off { border: 1.5px dashed var(--line-strong); }
+.key-short { background: var(--warn-fill); }
+.legend .only-alloc, .legend .only-prod { display: none; }
+.plan[data-mode="alloc"] .legend .only-alloc { display: inline-flex; }
+.plan[data-mode="prod"] .legend .only-prod { display: inline-flex; }
+
+.cols { display: none; }
+.rows { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.mrow {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-areas: "head head head" "c0 c1 c2" "sum sum sum";
+  gap: 8px;
+  padding: 10px 10px 12px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+}
+.m-head { grid-area: head; display: flex; align-items: baseline; justify-content: space-between; gap: 8px; min-width: 0; }
+.m-name { font-weight: 600; font-size: 1.0625rem; line-height: 1.2; }
+.m-dem { font-size: .8125rem; color: var(--ink-3); white-space: nowrap; }
+.m-dem b { font-weight: 500; color: var(--ink-2); }
+
+.cell { position: relative; min-width: 0; min-height: 56px; display: flex; }
+.c-plant { font-size: .75rem; font-weight: 600; line-height: 1; color: var(--ink-3); }
+.c-text { font-size: .75rem; color: var(--ink-3); line-height: 1.2; }
+.c-idle, .c-lock {
+  flex: 1; display: flex; flex-direction: column; justify-content: space-between; gap: 4px;
+  padding: 7px 8px; border-radius: 8px; position: relative;
+}
+.c-idle { border: 1px dashed var(--line); }
+.c-lock { background: var(--init); color: var(--on-ink); }
+.c-lock .c-plant, .c-lock .c-tag { color: var(--on-sub); }
+
+.c-btn {
+  appearance: none; flex: 1; position: relative;
+  display: flex; flex-direction: column; justify-content: space-between; align-items: flex-start; gap: 4px;
+  padding: 7px 8px; text-align: left; cursor: pointer;
+  background: var(--surface); border: 1.5px dashed var(--line-strong); border-radius: 8px;
+  -webkit-tap-highlight-color: transparent;
+  transition: background-color .15s, border-color .15s;
+}
+.c-btn:hover { border-color: var(--brand); }
+.c-mark {
+  position: absolute; top: 6px; right: 6px; width: 20px; height: 20px; border-radius: 50%;
+  display: grid; place-items: center; border: 1.5px solid var(--line-strong); color: var(--ink-3);
+}
+.c-mark svg { width: 11px; height: 11px; }
+.c-lock .c-mark { border: 0; color: var(--on-sub); }
+.c-lock .c-mark svg { width: 13px; height: 13px; }
+.c-tag { font-size: .75rem; line-height: 1.2; color: var(--ink-3); }
+.c-btn[aria-pressed="true"] { border-style: solid; color: var(--on-ink); background: var(--new); border-color: var(--new); }
+.c-btn[aria-pressed="true"] .c-plant, .c-btn[aria-pressed="true"] .c-tag { color: var(--on-sub); }
+.c-btn[aria-pressed="true"] .c-mark { background: #fff; border-color: #fff; color: var(--new); }
+.c-btn[aria-pressed="true"]:hover { filter: brightness(1.08); }
+
+.c-in {
+  flex: 1; display: flex; flex-direction: column; gap: 4px;
+  padding: 6px 6px 6px 8px; border-radius: 8px;
+  border: 1px solid var(--line); border-left-width: 4px;
+}
+.is-init .c-in { background: var(--init-tint); border-left-color: var(--init); }
+.is-new .c-in { background: var(--new-tint); border-left-color: var(--new); }
+.c-in input {
+  width: 100%; min-width: 0; min-height: 36px;
+  padding: 4px 8px; border-radius: 6px;
+  border: 1px solid var(--line-strong); background: var(--surface); color: var(--ink);
+  font-size: 1rem; font-weight: 600; text-align: right;
+  -moz-appearance: textfield; appearance: textfield;
+}
+.c-in input::-webkit-outer-spin-button, .c-in input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.c-in input::placeholder { color: var(--ink-3); font-weight: 400; }
+.c-in input:focus { border-color: var(--brand); outline: none; box-shadow: 0 0 0 3px color-mix(in srgb, var(--focus) 55%, transparent); }
+
+.m-sum { grid-area: sum; display: flex; align-items: center; gap: 10px; min-width: 0; }
+.m-meter { flex: 1; min-width: 0; }
+.m-track { position: relative; height: 10px; border-radius: 5px; background: var(--track); overflow: hidden; }
+.m-fill { position: absolute; left: 0; top: 0; bottom: 0; width: 0; border-radius: 0 5px 5px 0; background: var(--ink-3); transition: width .25s cubic-bezier(.2, .7, .2, 1); }
+.m-dline { position: absolute; top: 0; bottom: 0; width: 2px; margin-left: -1px; background: var(--ink-2); display: none; }
+.mrow.is-over .m-dline { display: block; }
+.mrow.is-ok .m-fill, .mrow.is-over .m-fill { background: var(--ok); }
+.mrow.is-short .m-fill { background: var(--warn-fill); }
+.m-note { margin-top: 3px; font-size: .75rem; line-height: 1.25; color: var(--ink-3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mrow.is-short .m-note { color: var(--warn); }
+.n-short { display: none; }
+.m-val { flex: none; min-width: 4.4em; text-align: right; font-size: .875rem; color: var(--ink-3); white-space: nowrap; }
+.m-val b { font-size: 1.0625rem; font-weight: 600; color: var(--ink); }
+.m-icon { flex: none; width: 18px; height: 18px; border-radius: 50%; display: grid; place-items: center; background: var(--neutral-bg); color: var(--ink-3); }
+.m-icon svg { width: 10px; height: 10px; }
+.mrow.is-ok .m-icon, .mrow.is-over .m-icon { background: var(--ok-bg); color: var(--ok); }
+.mrow.is-short .m-icon { background: var(--warn-bg); color: var(--warn); }
+
+/* one line per model when there is room */
+@container (min-width: 600px) {
+  .cols {
+    display: grid; grid-template-columns: 104px repeat(3, minmax(0, 1fr)) minmax(180px, 1.7fr);
+    gap: 8px; padding: 0 11px 6px; font-size: .8125rem; font-weight: 600; color: var(--ink-2);
+  }
+  .cols span:last-child { padding-left: 28px; }
+  .rows { gap: 6px; }
+  .mrow {
+    grid-template-columns: 104px repeat(3, minmax(0, 1fr)) minmax(180px, 1.7fr);
+    grid-template-areas: "head c0 c1 c2 sum";
+    align-items: center;
+    padding: 8px 10px;
+  }
+  .m-head { flex-direction: column; align-items: flex-start; gap: 2px; }
+  .m-dem { display: flex; flex-direction: column; line-height: 1.3; }
+  .m-dem .dot { display: none; }
+  .n-long { display: none; }
+  .n-short { display: inline; }
+  .c-plant { display: none; }
+  .c-btn, .c-idle, .c-lock { justify-content: flex-end; }
+  .c-in { justify-content: center; }
+}
+
+/* ---------- Attempts ---------- */
+.attempts-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+.link-btn {
+  appearance: none; border: 0; background: none; padding: 6px 0; min-height: 32px;
+  color: var(--ink-2); font-size: .875rem; text-decoration: underline; text-underline-offset: 3px; cursor: pointer;
+}
+.link-btn:hover { color: var(--ink); }
+.link-btn.armed { color: var(--danger); }
+.empty { margin-top: 6px; font-size: .9375rem; color: var(--ink-2); }
+.attempt-list { list-style: none; margin: 10px 0 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.attempt {
+  padding: 10px 12px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-left: 4px solid var(--line-strong);
+  border-radius: 8px;
+}
+.attempt.best { border-left-color: var(--ok); }
+.attempt.bad { border-left-color: var(--danger); }
+.attempt-top { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+.attempt-name { font-weight: 600; }
+.attempt-figs { font-size: .9375rem; }
+.attempt-figs b { font-weight: 600; }
+.badge {
+  display: inline-block; margin-left: 6px; padding: 1px 8px; border-radius: 999px;
+  font-size: .75rem; font-weight: 500; vertical-align: 1px;
+  background: var(--ok-bg); color: var(--ok);
+}
+.badge.bad { background: var(--danger-bg); color: var(--danger); }
+.attempt-info { margin-top: 2px; font-size: .875rem; color: var(--ink-2); }
+.attempt-actions { display: flex; gap: 16px; margin-top: 2px; }
+
+/* ---------- Data ---------- */
+.data h2 { margin-bottom: 4px; }
+.data .hint { margin-bottom: 14px; }
+.tables { display: flex; flex-direction: column; gap: 18px; }
+.tbl-block h3 { font-size: 1rem; font-weight: 600; margin-bottom: 6px; }
+.tbl-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+table { border-collapse: collapse; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; font-size: .9375rem; }
+th, td { padding: 6px 10px; border-bottom: 1px solid var(--line); text-align: right; white-space: nowrap; }
+th:first-child, td:first-child { text-align: left; }
+thead th { font-size: .8125rem; font-weight: 600; color: var(--ink-2); background: var(--paper); vertical-align: bottom; }
+tbody tr:last-child td, tbody tr:last-child th { border-bottom: 0; }
+tbody th { font-weight: 500; }
+td.init { background: var(--init-tint); font-weight: 600; color: var(--heading); }
+td.zero { color: var(--ink-3); }
+.tbl-note { margin-top: 6px; font-size: .8125rem; color: var(--ink-3); max-width: 60ch; }
+
+/* ---------- Footer ---------- */
+.foot { padding-top: 20px; padding-bottom: calc(28px + env(safe-area-inset-bottom)); border-top: 1px solid var(--line); font-size: .8125rem; color: var(--ink-3); }
+.foot p { max-width: 80ch; }
+.foot p + p { margin-top: 4px; }
+
+/* ---------- Larger screens ---------- */
+@media (min-width: 600px) {
+  :root { --gutter: 24px; }
+  .logo { height: 48px; }
+  .plan-head { flex-direction: row; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; }
+  .plan-head .modes { flex: 0 1 420px; }
+  .tables { flex-direction: row; flex-wrap: wrap; align-items: flex-start; gap: 24px; }
+}
+@media (min-width: 860px) {
+  :root { --gutter: 32px; }
+  .masthead { padding-top: 28px; }
+  .logo { height: 56px; }
+  .title { margin-top: 36px; }
+  .layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 340px;
+    grid-template-areas: "task side" "plan side" "data side";
+    grid-template-rows: auto auto 1fr;
+    column-gap: 32px;
+    row-gap: 32px;
+    align-items: start;
+    padding-top: 20px;
+    padding-bottom: 56px;
+  }
+  .task { grid-area: task; }
+  .plan { grid-area: plan; }
+  .data { grid-area: data; }
+  .side {
+    grid-area: side;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    position: sticky;
+    top: 16px;
+    max-height: calc(100vh - 32px);
+    max-height: calc(100dvh - 32px);
+    overflow: auto;
+    padding: 2px;
+    margin: -2px;
+  }
+  .panel {
+    position: static;
+    margin: 0;
+    padding: 18px 20px 16px;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    box-shadow: none;
+  }
+  .panel-head { display: block; margin-bottom: 12px; }
+  .figures { flex-direction: column; align-items: stretch; gap: 4px; }
+  .fig-value { font-size: 2.375rem; }
+  .figures .status { justify-content: flex-start; text-align: left; font-size: .9375rem; margin-top: 8px; }
+  .status-short { display: none; }
+  .status-long { display: inline; }
+  .issues { display: block; margin: 6px 0 0 28px; padding: 0; list-style: none; font-size: .875rem; color: var(--ink-2); }
+  .issues li + li { margin-top: 2px; }
+  .costs { display: none; }
+  .cost-table { display: block; margin: 10px 0 0; font-size: .9375rem; }
+  .cost-table div { display: flex; justify-content: space-between; gap: 12px; padding: 3px 0; color: var(--ink-2); }
+  .cost-table dd { margin: 0; font-weight: 600; color: var(--ink); white-space: nowrap; }
+  .cost-table .gap-row { margin-top: 4px; padding-top: 7px; border-top: 1px solid var(--line); }
+  .plants { grid-template-columns: 1fr; gap: 14px; margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--line); }
+  .pl-top { font-size: .9375rem; }
+  .pl-track { height: 12px; border-radius: 6px; margin-top: 6px; }
+  .pl-sub { font-size: .8125rem; }
+  .short { display: none; }
+  .long { display: inline; }
+  .panel-note { display: block; margin-top: 14px; font-size: .8125rem; color: var(--ink-3); }
+}
+@media (min-width: 1100px) {
+  .layout { grid-template-columns: minmax(0, 1fr) 360px; column-gap: 48px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition: none !important; animation: none !important; }
+}
+@media (forced-colors: active) {
+  .c-btn[aria-pressed="true"], .c-lock { outline: 3px solid Highlight; }
+}
+
+/* ================= Task 1 additions ================= */
+:root { --hatch: #D3E0E5; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --hatch: #24495A; } }
+:root[data-theme="dark"] { --hatch: #24495A; }
+
+.kicker { margin-top: 24px; font-size: .9375rem; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; color: var(--ink-3); }
+.kicker + .title { margin-top: 6px; }
+sub { font-size: .72em; line-height: 0; }
+.v { font-style: italic; white-space: nowrap; }
+
+.layout > .setup { order: 2; }
+.panel { order: 3; }
+.plan { order: 4; }
+.opt { order: 5; }
+.actions { order: 6; }
+.attempts { order: 7; }
+.data { order: 8; }
+.model { order: 9; }
+
+.rules { margin: .9em 0 0; padding: 12px 16px 12px 34px; max-width: 66ch; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; color: var(--ink-2); font-size: 1rem; }
+.rules li + li { margin-top: 4px; }
+.rules-title { display: block; margin-left: -18px; margin-bottom: 4px; font-weight: 600; color: var(--ink); }
+
+/* scenario and parameters */
+.setup h2 { margin-bottom: 10px; }
+.setup-row { display: flex; flex-wrap: wrap; gap: 12px 20px; align-items: flex-end; }
+.scen { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; padding: 4px; border-radius: 10px; background: var(--track); flex: 1 1 380px; max-width: 560px; }
+.scen-btn { appearance: none; border: 0; border-radius: 7px; background: transparent; min-height: 44px; padding: 6px 8px; cursor: pointer; font-size: .9375rem; font-weight: 500; color: var(--ink-2); line-height: 1.2; }
+.scen-btn[aria-pressed="true"] { background: var(--surface); color: var(--ink); box-shadow: 0 1px 3px rgba(0, 40, 56, .18); }
+.param { display: flex; flex-direction: column; gap: 4px; font-size: .875rem; color: var(--ink-2); white-space: nowrap; }
+.param-in { display: flex; align-items: center; gap: 6px; }
+.param input { width: 84px; min-height: 44px; padding: 6px 10px; border-radius: 8px; border: 1px solid var(--line-strong); background: var(--surface); color: var(--ink); font-size: 1rem; font-weight: 600; text-align: right; }
+.param input:focus { border-color: var(--brand); outline: none; box-shadow: 0 0 0 3px color-mix(in srgb, var(--focus) 55%, transparent); }
+.scen-desc { margin-top: 10px; font-size: .9375rem; color: var(--ink-2); max-width: 70ch; }
+.scen-desc b { color: var(--ink); font-weight: 600; }
+.pill { display: inline-block; padding: 1px 8px; border-radius: 999px; font-size: .75rem; font-weight: 600; background: var(--track); color: var(--ink-2); vertical-align: 1px; }
+
+/* panel */
+.panel-scen { font-size: .8125rem; color: var(--ink-3); }
+.issues b { font-weight: 600; color: var(--danger); }
+.plants { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; }
+.plant .pl-num { font-size: .75rem; }
+
+/* decision grid: five plants */
+.mrow { grid-template-columns: repeat(5, minmax(0, 1fr)); grid-template-areas: "head head head head head" "c0 c1 c2 c3 c4" "sum sum sum sum sum"; gap: 6px; padding: 10px 8px 12px; }
+.cell { min-height: 54px; }
+.c-btn, .c-lock, .c-idle, .c-na { padding: 6px 6px; }
+.c-mark { top: 5px; right: 5px; width: 18px; height: 18px; }
+.c-tag { font-size: .6875rem; }
+.c-na { flex: 1; display: flex; flex-direction: column; justify-content: space-between; gap: 4px; border-radius: 8px; background: repeating-linear-gradient(135deg, var(--hatch) 0 2px, transparent 2px 7px); border: 1px solid var(--line); }
+.c-na .c-text, .c-idle .c-text { font-size: .6875rem; }
+.c-in { padding: 5px 4px 5px 6px; }
+.c-in input { padding: 4px 6px; min-height: 34px; font-size: .9375rem; }
+.key-na { background: repeating-linear-gradient(135deg, var(--hatch) 0 2px, transparent 2px 5px); border: 1px solid var(--line); }
+.mrow.is-low .m-fill, .mrow.is-high .m-fill { background: var(--danger); }
+.mrow.is-low .m-icon, .mrow.is-high .m-icon { background: var(--danger-bg); color: var(--danger); }
+.mrow.is-low, .mrow.is-high { border-color: color-mix(in srgb, var(--danger) 45%, var(--line)); }
+.mrow.is-low .m-note, .mrow.is-high .m-note { color: var(--danger); }
+.m-zone { position: absolute; top: 0; bottom: 0; background: var(--zone, var(--line)); }
+.m-min { position: absolute; top: 0; bottom: 0; width: 2px; margin-left: -1px; background: var(--ink-2); }
+.n-short { display: none; }
+@container (min-width: 640px) {
+  .cols { grid-template-columns: 104px repeat(5, minmax(0, 1fr)) minmax(150px, 1.4fr); padding: 0 9px 6px; }
+  .mrow { grid-template-columns: 104px repeat(5, minmax(0, 1fr)) minmax(150px, 1.4fr); grid-template-areas: "head c0 c1 c2 c3 c4 sum"; padding: 8px; }
+  .m-dem { display: flex; flex-direction: column; line-height: 1.3; }
+  .m-dem .dot { display: none; }
+  .m-note { display: none; }
+}
+
+/* optimizer */
+.opt { padding: 16px; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; }
+.opt h2 { margin-bottom: 6px; }
+.opt .hint { font-size: .875rem; }
+.opt-lock { margin-top: 8px; padding: 8px 10px; border-radius: 8px; background: var(--neutral-bg); font-size: .875rem; color: var(--ink-2); display: flex; gap: 8px; align-items: flex-start; }
+.opt-lock svg { flex: none; width: 14px; height: 14px; margin-top: 3px; }
+.opt.is-open .opt-lock { display: none; }
+.opt-grid { display: flex; flex-direction: column; gap: 10px; margin-top: 12px; }
+.opt-grid .btn { width: 100%; }
+.opt-k { display: flex; align-items: center; justify-content: space-between; gap: 10px; font-size: .875rem; color: var(--ink-2); }
+.opt-k input { width: 84px; min-height: 40px; padding: 4px 8px; border-radius: 8px; border: 1px solid var(--line-strong); background: var(--surface); color: var(--ink); font-size: .9375rem; font-weight: 600; text-align: right; }
+.opt-msg { margin-top: 10px; font-size: .875rem; color: var(--ink-2); min-height: 1.4em; }
+.opt-msg b { color: var(--ink); }
+.opt-msg.bad { color: var(--danger); }
+
+/* model formulation */
+.model .hint { margin-bottom: 12px; }
+.formula { display: grid; grid-template-columns: auto 1fr auto; gap: 6px 14px; align-items: baseline; max-width: 640px; padding: 14px 16px; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; font-size: .9375rem; overflow-x: auto; }
+.formula .no { font-weight: 600; color: var(--ink-2); white-space: nowrap; }
+.formula .eq { white-space: nowrap; }
+.formula .for { color: var(--ink-3); white-space: nowrap; font-size: .875rem; }
+.notation { margin-top: 14px; display: grid; grid-template-columns: auto 1fr; gap: 3px 14px; max-width: 640px; font-size: .9375rem; color: var(--ink-2); }
+.notation dt { font-style: italic; color: var(--ink); white-space: nowrap; }
+.notation dd { margin: 0; }
+.notation .grp { grid-column: 1 / -1; margin-top: 8px; font-weight: 600; font-style: normal; color: var(--ink); }
+
+td.changed { color: var(--danger); font-weight: 600; }
+.scen-list { margin: 8px 0 0; padding-left: 20px; font-size: .9375rem; color: var(--ink-2); max-width: 70ch; }
+.scen-list li + li { margin-top: 4px; }
+
+@media (min-width: 600px) {
+  .mrow { gap: 8px; padding: 10px 10px 12px; }
+  .c-tag { font-size: .75rem; }
+}
+@media (min-width: 860px) {
+  .layout { grid-template-areas: "task side" "setup side" "plan side" "data side" "model side"; grid-template-rows: auto auto auto auto 1fr; }
+  .setup { grid-area: setup; }
+  .model { grid-area: model; }
+  .plants { grid-template-columns: 1fr; }
+  .plant .pl-num { font-size: inherit; }
+}
+</style>
+</head>
+<body>
+
+<header class="masthead wrap">
+  <svg class="logo" role="img" aria-label="Institut für Automobilwirtschaft und Industrielle Produktion (AIP)" focusable="false" viewBox="245 25 4700 1016" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" stroke-linejoin="round" stroke-miterlimit="2" fill-rule="evenodd" clip-rule="evenodd" overflow="hidden"><g transform="scale(4.16667 4.16667)"><g><g transform="translate(1051.27 216.39)"><path d="M0-201.917C-50.271-207.721-106.995-199.063-152.008-180.847-189.193-165.797-219.392-142.755-234.017-117.425-243.575-100.872-246.214-85.563-242.677-69.849-234.241-32.403-189.258-0.995-120.581 6.939-99.934 9.316-78.985 9.334-58.474 7.373L-58.474-1.533C-77.497-0.186-96.853 1.006-115.89-1.198-209.719-12.028-260.741-64.683-229.632-118.562-198.526-172.442-96.272-211.251-0.964-200.245 83.34-190.511 132.077-144.957 119.547-97.067L122.573-97.067C135.401-146.568 82.9-192.343 0-201.917" fill="#F37427" fill-rule="nonzero"/></g><g transform="translate(923.035 11.4395)"><path d="M0 226.614C-100.488 215.009-152.469 152.54-115.877 89.162-79.285 25.782 29.135-12.205 130.288-0.524 219.318 9.756 270.534 57.968 257.22 107.883L260.425 107.883C273.111 54.657 218.137 7.523 131.425-2.489 76.229-8.863 14.099 0.094-35.081 20.984-72.904 37.049-103.934 61.641-120.465 90.274-129.76 106.367-133.971 121.125-133.5 136.625-132.047 184.553-84.415 225.594-5.519 234.705 19.383 237.582 44.84 238.819 69.762 236.373L69.762 227.959C46.617 230.555 23.021 229.274 0 226.614" fill="#F37427" fill-rule="nonzero"/></g><g transform="translate(1052.83 227.933)"><path d="M0-216.15C-52.83-222.252-112.063-213.505-159.022-194.166-196.774-178.614-227.546-154.743-243.161-127.703-252.608-111.343-256.075-96.276-254.118-80.623-248.819-38.215-202.265-2.273-128.408 6.254-105.729 8.878-87.892 9.457-60.028 7.474L-60.028-0.433C-81.011 1.444-102.379 1.338-123.323-1.082-220.642-12.321-272.386-70.438-238.675-128.827-204.96-187.216-98.362-225.607-1.048-214.338 84.138-204.475 134.864-158.895 122.698-108.611L125.829-108.611C138.547-160.944 84.244-206.421 0-216.15" fill="#F37427" fill-rule="nonzero"/></g><g transform="translate(949.273 106.471)"><path d="M0 32.606-41.128 32.606C-50.116 32.606-57.43 25.293-57.43 16.31-57.43 7.319-50.116 0.009-41.128 0.009L-9.749 0.009C-0.764 0.009 6.548 7.319 6.548 16.31L6.551 56.97 30.918 56.97 30.92 16.31C30.92-6.157 12.711-24.367-9.749-24.367L-41.128-24.367C-63.589-24.367-81.803-6.157-81.803 16.31-81.803 38.769-63.589 56.973-41.128 56.973L0 56.973 0 32.606Z" fill="currentColor" fill-rule="nonzero"/></g><g transform="translate(1049.29 135.723)"><path d="M0 27.721 41.128 27.721C63.59 27.721 81.805 9.517 81.805-12.942 81.805-35.409 63.59-53.619 41.128-53.619L9.747-53.619C-12.711-53.619-30.918-35.409-30.918-12.942L-30.917 81.34-6.554 81.34-6.548-12.942C-6.548-21.933 0.767-29.243 9.747-29.243L41.128-29.243C50.117-29.243 57.432-21.933 57.432-12.942 57.432-3.96 50.117 3.354 41.128 3.354L0 3.354 0 27.721Z" fill="currentColor" fill-rule="nonzero"/></g><g transform="matrix(-1 0 0 1 1998.43 -9.62)"><rect x="987.333" y="91.674" width="23.76" height="81.39" fill="currentColor"/></g><g transform="matrix(-1 0 0 1 1998.43 -131.644)"><rect x="987.333" y="181.303" width="23.76" height="24.156" fill="currentColor"/></g></g><g><g><g transform="matrix(54 0 0 54 55.4106 117.055)"><rect x="0.102" y="-0.659" width="0.078" height="0.659" fill="currentColor" fill-rule="nonzero"/></g><g transform="matrix(54 0 0 54 70.6926 117.055)"><path d="M0.469-0.211C0.469-0.256 0.469-0.301 0.465-0.346 0.458-0.439 0.402-0.465 0.321-0.465 0.252-0.465 0.207-0.431 0.169-0.386L0.157-0.453 0.086-0.453C0.09-0.417 0.094-0.379 0.094-0.327L0.094 0 0.171 0 0.171-0.304C0.193-0.334 0.235-0.378 0.246-0.384 0.253-0.388 0.288-0.396 0.314-0.396 0.381-0.396 0.387-0.361 0.391-0.292 0.392-0.274 0.392-0.255 0.392-0.238L0.392-0.196C0.392-0.129 0.392-0.102 0.39 0L0.466 0C0.469-0.103 0.469-0.139 0.469-0.211Z" fill="currentColor" fill-rule="nonzero"/></g><g transform="matrix(54 0 0 54 100.447 117.055)"><path d="M0.359-0.122C0.359-0.26 0.118-0.261 0.118-0.344 0.118-0.387 0.162-0.403 0.203-0.403 0.249-0.403 0.301-0.395 0.345-0.359L0.353-0.431C0.32-0.448 0.273-0.465 0.209-0.465 0.096-0.465 0.041-0.41 0.041-0.339 0.041-0.204 0.282-0.202 0.282-0.117 0.282-0.079 0.245-0.05 0.185-0.05 0.124-0.05 0.099-0.066 0.052-0.096L0.043-0.024C0.078 0 0.132 0.013 0.187 0.013 0.305 0.013 0.359-0.053 0.359-0.122Z" fill="currentColor" fill-rule="nonzero"/></g><g transform="matrix(54 0 0 54 122.047 117.055)"><path d="M0.287-0.016 0.281-0.08C0.258-0.07 0.236-0.054 0.214-0.054 0.18-0.054 0.167-0.076 0.167-0.125L0.167-0.393 0.286-0.393 0.286-0.453 0.167-0.453 0.167-0.606 0.092-0.606 0.092-0.452 0.01-0.452 0.01-0.392 0.092-0.392 0.092-0.1C0.092-0.021 0.136 0.013 0.19 0.013 0.224 0.013 0.263-0.001 0.287-0.016Z" fill="currentColor" fill-rule="nonzero"/></g><g transform="matrix(54 0 0 54 138.733 117.055)"><path d="M0.176-0.619C0.176-0.647 0.152-0.673 0.124-0.673 0.098-0.673 0.075-0.647 0.075-0.619 0.075-0.59 0.098-0.562 0.124-0.562 0.152-0.562 0.176-0.591 0.176-0.619ZM0.164 0 0.164-0.453 0.087-0.453 0.087 0 0.164 0Z" fill="currentColor" fill-rule="nonzero"/></g><g transform="matrix(54 0 0 54 152.287 117.055)"><path d="M0.287-0.016 0.281-0.08C0.258-0.07 0.236-0.054 0.214-0.054 0.18-0.054 0.167-0.076 0.167-0.125L0.167-0.393 0.286-0.393 0.286-0.453 0.167-0.453 0.167-0.606 0.092-0.606 0.092-0.452 0.01-0.452 0.01-0.392 0.092-0.392 0.092-0.1C0.092-0.021 0.136 0.013 0.19 0.013 0.224 0.013 0.263-0.001 0.287-0.016Z" fill="currentColor" fill-rule="nonzero"/></g><g transform="matrix(54 0 0 54 168.973 117.055)"><path d="M0.462 0C0.456-0.041 0.454-0.084 0.454-0.125L0.454-0.453 0.377-0.453 0.377-0.152C0.369-0.133 0.34-0.094 0.314-0.072 0.289-0.06 0.262-0.054 0.234-0.054 0.164-0.054 0.159-0.104 0.159-0.16L0.159-0.453 0.082-0.453 0.082-0.106C0.082-0.015 0.146 0.013 0.227 0.013 0.3 0.013 0.337-0.007 0.38-0.066L0.392 0 0.462 0Z" fill="currentColor" fill-rule="nonzero"/></g><g transform="matrix(54 0 0 54 198.349 117.055)"><path d="M0.287-0.016 0.281-0.08C0.258-0.07 0.236-0.054 0.214-0.054 0.18-0.054 0.167-0.076 0.167-0.125L0.167-0.393 0.286-0.393 0.286-0.453 0.167-0.453 0.167-0.606 0.092-0.606 0.092-0.452 0.01-0.452 0.01-0.392 0.092-0.392 0.092-0.1C0.092-0.021 0.136 0.013 0.19 0.013 0.224 0.013 0.263-0.001 0.287-0.016Z" fill="currentColor" fill-rule="nonzero"/></g><g transform="matrix(54 0 0 54 227.995 117.055)"><path d="M0.4-0.724C0.375-0.734 0.344-0.743 0.306-0.743 0.165-0.743 0.099-0.694 0.099-0.462L0.099-0.452 0.016-0.452 0.016-0.392 0.099-0.392 0.099 0 0.176 0 0.176-0.393 0.292-0.393 0.292-0.453 0.176-0.453C0.176-0.628 0.216-0.655 0.223-0.66 0.228-0.664 0.262-0.676 0.296-0.676 0.342-0.676 0.363-0.665 0.392-0.647L0.4-0.724Z" fill="currentColor" fill-rule="nonzero"/></g><g transform="matrix(54 0 0 54 243.493 117.055)"><path d="M0.462 0C0.456-0.041 0.454-0.084 0.454-0.125L0.454-0.453 0.377-0.453 0.377-0.152C0.369-0.133 0.34-0.094 0.314-0.072 0.289-0.06 0.262-0.054 0.234-0.054 0.164-0.054 0.159-0.104 0.159-0.16L0.159-0.453 0.082-0.453 0.082-0.106C0.082-0.015 0.146 0.013 0.227 0.013 0.3 0.013 0.337-0.007 0.38-0.066L0.392 0 0.462 0ZM0.435-0.581C0.435-0.613 0.411-0.639 0.381-0.639 0.351-0.639 0.328-0.612 0.328-0.581 0.328-0.551 0.351-0.526 0.381-0.526 0.411-0.526 0.435-0.551 0.435-0.581ZM0.218-0.581C0.218-0.613 0.194-0.639 0.164-0.639 0.134-0.639 0.111-0.612 0.111-0.581 0.111-0.551 0.134-0.526 0.164-0.526 0.194-0.526 0.218-0.551 0.218-0.581Z" fill="currentColor" fill-rule="nonzero"/></g><g transform="matrix(54 0 0 54 272.869 117.055)"><path d="M0.347-0.371C0.347-0.38 0.345-0.389 0.344-0.398 0.339-0.441 0.315-0.464 0.273-0.464 0.224-0.464 0.185-0.42 0.17-0.381L0.157-0.453 0.086-0.453C0.091-0.408 0.094-0.377 0.094-0.329L0.094 0 0.171 0 0.171-0.288C0.187-0.325 0.219-0.395 0.262-0.395 0.292-0.395 0.294-0.369 0.294-0.363L0.347-0.371Z" fill="currentColor" fill-rule="nonzero"/></g><g transform="matrix(54 0 0 54 303.649 117.055)"><path d="M0.542 0 0.3-0.681 0.262-0.681 0.007 0 0.083 0 0.153-0.189 0.392-0.189 0.458 0 0.542 0ZM0.368-0.255 0.176-0.255 0.276-0.523 0.368-0.255Z" fill="currentColor" fill-rule="nonzero"/></g><g transform="matrix(54 0 0 54 333.295 117.055)"><path d="M0.462 0C0.456-0.041 0.454-0.084 0.454-0.125L0.454-0.453 0.377-0.453 0.377-0.152C0.369-0.133 0.34-0.094 0.314-0.072 0.289-0.06 0.262-0.054 0.234-0.054 0.164-0.054 0.159-0.104 0.159-0.16L0.159-0.453 0.082-0.453 0.082-0.106C0.082-0.015 0.146 0.013 0.227 0.013 0.3 0.013 0.337-0.007 0.38-0.066L0.392 0 0.462 0Z" fill="currentColor" fill-rule="nonzero"/></g><g transform="matrix(54 0 0 54 362.671 117.055)"><path d="M0.287-0.016 0.281-0.08C0.258-0.07 0.236-0.054 0.214-0.054 0.18-0.054 0.167-0.076 0.167-0.125L0.167-0.393 0.286-0.393 0.286-0.453 0.167-0.453 0.167-0.606 0.092-0.606 0.092-0.452 0.01-0.452 0.01-0.392 0.092-0.392 0.092-0.1C0.092-0.021 0.136 0.013 0.19 0.013 0.224 0.013 0.263-0.001 0.287-0.016Z" fill="currentColor" fill-rule="nonzero"/></g><g transform="matrix(54 0 0 54 379.357 117.055)"><path d="M0.474-0.226C0.474-0.373 0.39-0.465 0.263-0.465 0.119-0.465 0.042-0.359 0.042-0.226 0.042-0.08 0.126 0.013 0.252 0.013 0.389 0.013 0.474-0.086 0.474-0.226ZM0.39-0.24C0.391-0.233 0.391-0.226 0.391-0.219 0.391-0.141 0.351-0.09 0.34-0.079 0.33-0.069 0.293-0.054 0.262-0.054 0.202-0.054 0.125-0.087 0.125-0.231 0.125-0.309 0.166-0.364 0.176-0.374 0.185-0.383 0.217-0.399 0.253-0.399 0.322-0.399 0.38-0.365 0.39-0.24Z" fill="currentColor" fill-rule="nonzero"/></g><g transform="matrix(54 0 0 54 407.221 117.055)"><path d="M0.764-0.211C0.764-0.256 0.764-0.301 0.76-0.346 0.753-0.439 0.697-0.465 0.616-0.465 0.547-0.465 0.501-0.432 0.459-0.38 0.442-0.446 0.391-0.465 0.321-0.465 0.252-0.465 0.207-0.431 0.169-0.386L0.157-0.453 0.086-0.453C0.09-0.417 0.094-0.375 0.094-0.327L0.094 0 0.171 0 0.171-0.304C0.193-0.334 0.235-0.378 0.246-0.384 0.253-0.388 0.288-0.396 0.314-0.396 0.374-0.396 0.39-0.365 0.39-0.304L0.39 0 0.466 0 0.466-0.304C0.488-0.334 0.53-0.378 0.541-0.384 0.548-0.388 0.583-0.396 0.609-0.396 0.676-0.396 0.682-0.361 0.686-0.292 0.687-0.274 0.687-0.255 0.687-0.238L0.687-0.196C0.687-0.129 0.687-0.102 0.685 0L0.762 0C0.764-0.103 0.764-0.139 0.764-0.211Z" fill="currentColor" fill-rule="nonzero"/></g><g transform="matrix(54 0 0 54 452.905 117.055)"><path d="M0.474-0.226C0.474-0.373 0.39-0.465 0.263-0.465 0.119-0.465 0.042-0.359 0.042-0.226 0.042-0.08 0.126 0.013 0.252 0.013 0.389 0.013 0.474-0.086 0.474-0.226ZM0.39-0.24C0.391-0.233 0.391-0.226 0.391-0.219 0.391-0.141 0.351-0.09 0.34-0.079 0.33-0.069 0.293-0.054 0.262-0.054 0.202-0.054 0.125-0.087 0.125-0.231 0.125-0.309 0.166-0.364 0.176-0.374 0.185-0.383 0.217-0.399 0.253-0.399 0.322-0.399 0.38-0.365 0.39-0.24Z" fill="currentColor" fill-rule="nonzero"/></g><g transform="matrix(54 0 0 54 480.769 117.055)"><path d="M0.476-0.236C0.476-0.404 0.402-0.465 0.299-0.465 0.242-0.465 0.196-0.452 0.159-0.437L0.159-0.73 0.082-0.73 0.082-0.004C0.143 0.008 0.196 0.013 0.237 0.013 0.387 0.013 0.476-0.084 0.476-0.236ZM0.392-0.23C0.392-0.115 0.333-0.054 0.233-0.054 0.212-0.054 0.19-0.054 0.159-0.06L0.159-0.369C0.18-0.38 0.207-0.389 0.221-0.393 0.226-0.395 0.248-0.396 0.285-0.396 0.366-0.396 0.392-0.327 0.392-0.23Z" fill="currentColor" fill-rule="nonzero"/></g><g transform="matrix(54 0 0 54 508.741 117.055)"><path d="M0.176-0.619C0.176-0.647 0.152-0.673 0.124-0.673 0.098-0.673 0.075-0.647 0.075-0.619 0.075-0.59 0.098-0.562 0.124-0.562 0.152-0.562 0.176-0.591 0.176-0.619ZM0.164 0 0.164-0.453 0.087-0.453 0.087 0 0.164 0Z" fill="currentColor" fill-rule="nonzero"/></g><g transform="matrix(54 0 0 54 522.295 117.055)"><rect x="0.082" y="-0.73" width="0.077" height="0.73" fill="currentColor" fill-rule="nonzero"/></g><g transform="matrix(54 0 0 54 535.309 117.055)"><path d="M0.653-0.453 0.577-0.453 0.471-0.102 0.331-0.473 0.207-0.102 0.087-0.453 0.005-0.453 0.174 0.013 0.234 0.013 0.331-0.284 0.437 0.013 0.497 0.013 0.653-0.453Z" fill="currentColor" fill-rule="nonzero"/></g><g transform="matrix(54 0 0 54 570.841 117.055)"><path d="M0.176-0.619C0.176-0.647 0.152-0.673 0.124-0.673 0.098-0.673 0.075-0.647 0.075-0.619 0.075-0.59 0.098-0.562 0.124-0.562 0.152-0.562 0.176-0.591 0.176-0.619ZM0.164 0 0.164-0.453 0.087-0.453 0.087 0 0.164 0Z" fill="currentColor" fill-rule="nonzero"/></g><g transform="matrix(54 0 0 54 584.395 117.055)"><path d="M0.347-0.371C0.347-0.38 0.345-0.389 0.344-0.398 0.339-0.441 0.315-0.464 0.273-0.464 0.224-0.464 0.185-0.42 0.17-0.381L0.157-0.453 0.086-0.453C0.091-0.408 0.094-0.377 0.094-0.329L0.094 0 0.171 0 0.171-0.288C0.187-0.325 0.219-0.395 0.262-0.395 0.292-0.395 0.294-0.369 0.294-0.363L0.347-0.371Z" fill="currentColor" fill-rule="nonzero"/></g><g transform="matrix(54 0 0 54 603.133 117.055)"><path d="M0.287-0.016 0.281-0.08C0.258-0.07 0.236-0.054 0.214-0.054 0.18-0.054 0.167-0.076 0.167-0.125L0.167-0.393 0.286-0.393 0.286-0.453 0.167-0.453 0.167-0.606 0.092-0.606 0.092-0.452 0.01-0.452 0.01-0.392 0.092-0.392 0.092-0.1C0.092-0.021 0.136 0.013 0.19 0.013 0.224 0.013 0.263-0.001 0.287-0.016Z" fill="currentColor" fill-rule="nonzero"/></g><g transform="matrix(54 0 0 54 619.819 117.055)"><path d="M0.359-0.122C0.359-0.26 0.118-0.261 0.118-0.344 0.118-0.387 0.162-0.403 0.203-0.403 0.249-0.403 0.301-0.395 0.345-0.359L0.353-0.431C0.32-0.448 0.273-0.465 0.209-0.465 0.096-0.465 0.041-0.41 0.041-0.339 0.041-0.204 0.282-0.202 0.282-0.117 0.282-0.079 0.245-0.05 0.185-0.05 0.124-0.05 0.099-0.066 0.052-0.096L0.043-0.024C0.078 0 0.132 0.013 0.187 0.013 0.305 0.013 0.359-0.053 0.359-0.122Z" fill="currentColor" fill-rule="nonzero"/></g><g transform="matrix(54 0 0 54 641.419 117.055)"><path d="M0.403-0.03 0.397-0.1C0.366-0.075 0.307-0.054 0.269-0.054 0.202-0.054 0.126-0.106 0.126-0.233 0.126-0.354 0.189-0.387 0.197-0.391 0.204-0.395 0.221-0.399 0.252-0.399 0.306-0.399 0.328-0.39 0.328-0.351L0.4-0.351C0.4-0.362 0.4-0.375 0.399-0.384 0.393-0.444 0.331-0.465 0.248-0.465 0.156-0.465 0.042-0.396 0.042-0.23 0.042-0.071 0.128 0.013 0.248 0.013 0.301 0.013 0.356 0.001 0.403-0.03Z" fill="currentColor" fill-rule="nonzero"/></g><g transform="matrix(54 0 0 54 663.883 117.055)"><path d="M0.456-0.211C0.456-0.256 0.456-0.301 0.453-0.346 0.446-0.439 0.389-0.465 0.309-0.465 0.239-0.465 0.197-0.434 0.159-0.389L0.159-0.73 0.082-0.73 0.082 0 0.159 0 0.159-0.304C0.18-0.334 0.222-0.378 0.233-0.384 0.24-0.388 0.275-0.396 0.302-0.396 0.369-0.396 0.374-0.361 0.378-0.292 0.38-0.256 0.38-0.217 0.38-0.196 0.38-0.129 0.38-0.102 0.377 0L0.454 0C0.456-0.103 0.456-0.139 0.456-0.211Z" fill="currentColor" fill-rule="nonzero"/></g><g transform="matrix(54 0 0 54 692.935 117.055)"><path d="M0.392 0C0.382-0.033 0.372-0.089 0.372-0.135L0.372-0.345C0.372-0.418 0.321-0.465 0.222-0.465 0.125-0.465 0.077-0.43 0.075-0.422 0.069-0.403 0.066-0.38 0.066-0.354L0.138-0.36C0.138-0.395 0.168-0.399 0.211-0.399 0.276-0.399 0.295-0.384 0.295-0.317L0.295-0.254C0.25-0.246 0.091-0.209 0.065-0.172 0.055-0.159 0.047-0.131 0.047-0.089 0.047-0.032 0.09 0.013 0.159 0.013 0.231 0.013 0.271-0.022 0.301-0.065 0.306-0.039 0.314-0.024 0.32 0L0.392 0ZM0.295-0.128C0.295-0.12 0.239-0.054 0.18-0.054 0.133-0.054 0.125-0.074 0.125-0.102 0.125-0.111 0.125-0.12 0.13-0.139 0.174-0.16 0.247-0.186 0.295-0.194L0.295-0.128Z" fill="currentColor" fill-rule="nonzero"/></g><g transform="matrix(54 0 0 54 717.127 117.055)"><path d="M0.4-0.724C0.375-0.734 0.344-0.743 0.306-0.743 0.165-0.743 0.099-0.694 0.099-0.462L0.099-0.452 0.016-0.452 0.016-0.392 0.099-0.392 0.099 0 0.176 0 0.176-0.393 0.292-0.393 0.292-0.453 0.176-0.453C0.176-0.628 0.216-0.655 0.223-0.66 0.228-0.664 0.262-0.676 0.296-0.676 0.342-0.676 0.363-0.665 0.392-0.647L0.4-0.724Z" fill="currentColor" fill-rule="nonzero"/></g><g transform="matrix(54 0 0 54 732.625 117.055)"><path d="M0.287-0.016 0.281-0.08C0.258-0.07 0.236-0.054 0.214-0.054 0.18-0.054 0.167-0.076 0.167-0.125L0.167-0.393 0.286-0.393 0.286-0.453 0.167-0.453 0.167-0.606 0.092-0.606 0.092-0.452 0.01-0.452 0.01-0.392 0.092-0.392 0.092-0.1C0.092-0.021 0.136 0.013 0.19 0.013 0.224 0.013 0.263-0.001 0.287-0.016Z" fill="currentColor" fill-rule="nonzero"/></g><g transform="matrix(54 0 0 54 55.4106 163.063)"><path d="M0.462 0C0.456-0.041 0.454-0.084 0.454-0.125L0.454-0.453 0.377-0.453 0.377-0.152C0.369-0.133 0.34-0.094 0.314-0.072 0.289-0.06 0.262-0.054 0.234-0.054 0.164-0.054 0.159-0.104 0.159-0.16L0.159-0.453 0.082-0.453 0.082-0.106C0.082-0.015 0.146 0.013 0.227 0.013 0.3 0.013 0.337-0.007 0.38-0.066L0.392 0 0.462 0Z" fill="currentColor" fill-rule="nonzero"/></g><g transform="matrix(54 0 0 54 84.7866 163.063)"><path d="M0.469-0.211C0.469-0.256 0.469-0.301 0.465-0.346 0.458-0.439 0.402-0.465 0.321-0.465 0.252-0.465 0.207-0.431 0.169-0.386L0.157-0.453 0.086-0.453C0.09-0.417 0.094-0.379 0.094-0.327L0.094 0 0.171 0 0.171-0.304C0.193-0.334 0.235-0.378 0.246-0.384 0.253-0.388 0.288-0.396 0.314-0.396 0.381-0.396 0.387-0.361 0.391-0.292 0.392-0.274 0.392-0.255 0.392-0.238L0.392-0.196C0.392-0.129 0.392-0.102 0.39 0L0.466 0C0.469-0.103 0.469-0.139 0.469-0.211Z" fill="currentColor" fill-rule="nonzero"/></g><g transform="matrix(54 0 0 54 114.541 163.063)"><path d="M0.456 0C0.451-0.045 0.448-0.08 0.448-0.125L0.448-0.73 0.371-0.73 0.371-0.45C0.335-0.46 0.314-0.465 0.272-0.465 0.131-0.465 0.042-0.377 0.042-0.224 0.042-0.081 0.127 0.013 0.235 0.013 0.295 0.013 0.331-0.006 0.376-0.054 0.378-0.037 0.381-0.017 0.385 0L0.456 0ZM0.371-0.133C0.344-0.094 0.301-0.054 0.247-0.054 0.197-0.054 0.126-0.11 0.126-0.231 0.126-0.32 0.17-0.373 0.182-0.384 0.193-0.394 0.235-0.399 0.265-0.399 0.348-0.399 0.371-0.389 0.371-0.315L0.371-0.133Z" fill="currentColor" fill-rule="nonzero"/></g><g transform="matrix(54 0 0 54 156.985 163.063)"><rect x="0.102" y="-0.659" width="0.078" height="0.659" fill="currentColor" fill-rule="nonzero"/></g><g transform="matrix(54 0 0 54 172.267 163.063)"><path d="M0.469-0.211C0.469-0.256 0.469-0.301 0.465-0.346 0.458-0.439 0.402-0.465 0.321-0.465 0.252-0.465 0.207-0.431 0.169-0.386L0.157-0.453 0.086-0.453C0.09-0.417 0.094-0.379 0.094-0.327L0.094 0 0.171 0 0.171-0.304C0.193-0.334 0.235-0.378 0.246-0.384 0.253-0.388 0.288-0.396 0.314-0.396 0.381-0.396 0.387-0.361 0.391-0.292 0.392-0.274 0.392-0.255 0.392-0.238L0.392-0.196C0.392-0.129 0.392-0.102 0.39 0L0.466 0C0.469-0.103 0.469-0.139 0.469-0.211Z" fill="currentColor" fill-rule="nonzero"/></g><g transform="matrix(54 0 0 54 202.021 163.063)"><path d="M0.456 0C0.451-0.045 0.448-0.08 0.448-0.125L0.448-0.73 0.371-0.73 0.371-0.45C0.335-0.46 0.314-0.465 0.272-0.465 0.131-0.465 0.042-0.377 0.042-0.224 0.042-0.081 0.127 0.013 0.235 0.013 0.295 0.013 0.331-0.006 0.376-0.054 0.378-0.037 0.381-0.017 0.385 0L0.456 0ZM0.371-0.133C0.344-0.094 0.301-0.054 0.247-0.054 0.197-0.054 0.126-0.11 0.126-0.231 0.126-0.32 0.17-0.373 0.182-0.384 0.193-0.394 0.235-0.399 0.265-0.399 0.348-0.399 0.371-0.389 0.371-0.315L0.371-0.133Z" fill="currentColor" fill-rule="nonzero"/></g><g transform="matrix(54 0 0 54 230.965 163.063)"><path d="M0.462 0C0.456-0.041 0.454-0.084 0.454-0.125L0.454-0.453 0.377-0.453 0.377-0.152C0.369-0.133 0.34-0.094 0.314-0.072 0.289-0.06 0.262-0.054 0.234-0.054 0.164-0.054 0.159-0.104 0.159-0.16L0.159-0.453 0.082-0.453 0.082-0.106C0.082-0.015 0.146 0.013 0.227 0.013 0.3 0.013 0.337-0.007 0.38-0.066L0.392 0 0.462 0Z" fill="currentColor" fill-rule="nonzero"/></g><g transform="matrix(54 0 0 54 260.341 163.063)"><path d="M0.359-0.122C0.359-0.26 0.118-0.261 0.118-0.344 0.118-0.387 0.162-0.403 0.203-0.403 0.249-0.403 0.301-0.395 0.345-0.359L0.353-0.431C0.32-0.448 0.273-0.465 0.209-0.465 0.096-0.465 0.041-0.41 0.041-0.339 0.041-0.204 0.282-0.202 0.282-0.117 0.282-0.079 0.245-0.05 0.185-0.05 0.124-0.05 0.099-0.066 0.052-0.096L0.043-0.024C0.078 0 0.132 0.013 0.187 0.013 0.305 0.013 0.359-0.053 0.359-0.122Z" fill="currentColor" fill-rule="nonzero"/></g><g transform="matrix(54 0 0 54 281.941 163.063)"><path d="M0.287-0.016 0.281-0.08C0.258-0.07 0.236-0.054 0.214-0.054 0.18-0.054 0.167-0.076 0.167-0.125L0.167-0.393 0.286-0.393 0.286-0.453 0.167-0.453 0.167-0.606 0.092-0.606 0.092-0.452 0.01-0.452 0.01-0.392 0.092-0.392 0.092-0.1C0.092-0.021 0.136 0.013 0.19 0.013 0.224 0.013 0.263-0.001 0.287-0.016Z" fill="currentColor" fill-rule="nonzero"/></g><g transform="matrix(54 0 0 54 298.627 163.063)"><path d="M0.347-0.371C0.347-0.38 0.345-0.389 0.344-0.398 0.339-0.441 0.315-0.464 0.273-0.464 0.224-0.464 0.185-0.42 0.17-0.381L0.157-0.453 0.086-0.453C0.091-0.408 0.094-0.377 0.094-0.329L0.094 0 0.171 0 0.171-0.288C0.187-0.325 0.219-0.395 0.262-0.395 0.292-0.395 0.294-0.369 0.294-0.363L0.347-0.371Z" fill="currentColor" fill-rule="nonzero"/></g><g transform="matrix(54 0 0 54 317.365 163.063)"><path d="M0.176-0.619C0.176-0.647 0.152-0.673 0.124-0.673 0.098-0.673 0.075-0.647 0.075-0.619 0.075-0.59 0.098-0.562 0.124-0.562 0.152-0.562 0.176-0.591 0.176-0.619ZM0.164 0 0.164-0.453 0.087-0.453 0.087 0 0.164 0Z" fill="currentColor" fill-rule="nonzero"/></g><g transform="matrix(54 0 0 54 330.919 163.063)"><path d="M0.426-0.251C0.426-0.394 0.379-0.465 0.244-0.465 0.128-0.465 0.042-0.38 0.042-0.225 0.042-0.074 0.132 0.013 0.246 0.013 0.332 0.013 0.378-0.006 0.418-0.031L0.412-0.101C0.385-0.077 0.324-0.054 0.27-0.054 0.176-0.054 0.122-0.116 0.122-0.226 0.122-0.238 0.122-0.24 0.124-0.251L0.426-0.251ZM0.356-0.311 0.134-0.311C0.145-0.356 0.173-0.381 0.179-0.386 0.184-0.391 0.218-0.4 0.239-0.4 0.298-0.4 0.352-0.391 0.356-0.311Z" fill="currentColor" fill-rule="nonzero"/></g><g transform="matrix(54 0 0 54 355.759 163.063)"><rect x="0.082" y="-0.73" width="0.077" height="0.73" fill="currentColor" fill-rule="nonzero"/></g><g transform="matrix(54 0 0 54 368.773 163.063)"><rect x="0.082" y="-0.73" width="0.077" height="0.73" fill="currentColor" fill-rule="nonzero"/></g><g transform="matrix(54 0 0 54 381.787 163.063)"><path d="M0.426-0.251C0.426-0.394 0.379-0.465 0.244-0.465 0.128-0.465 0.042-0.38 0.042-0.225 0.042-0.074 0.132 0.013 0.246 0.013 0.332 0.013 0.378-0.006 0.418-0.031L0.412-0.101C0.385-0.077 0.324-0.054 0.27-0.054 0.176-0.054 0.122-0.116 0.122-0.226 0.122-0.238 0.122-0.24 0.124-0.251L0.426-0.251ZM0.356-0.311 0.134-0.311C0.145-0.356 0.173-0.381 0.179-0.386 0.184-0.391 0.218-0.4 0.239-0.4 0.298-0.4 0.352-0.391 0.356-0.311Z" fill="currentColor" fill-rule="nonzero"/></g><g transform="matrix(54 0 0 54 420.127 163.063)"><path d="M0.513-0.463C0.513-0.589 0.419-0.664 0.308-0.664 0.285-0.664 0.191-0.664 0.139-0.66L0.102-0.658 0.102 0 0.181 0 0.181-0.259C0.214-0.254 0.269-0.254 0.285-0.254 0.398-0.254 0.513-0.339 0.513-0.463ZM0.423-0.463C0.423-0.352 0.344-0.32 0.255-0.32L0.181-0.32 0.181-0.597 0.281-0.598C0.373-0.598 0.423-0.556 0.423-0.463Z" fill="currentColor" fill-rule="nonzero"/></g><g transform="matrix(54 0 0 54 448.693 163.063)"><path d="M0.347-0.371C0.347-0.38 0.345-0.389 0.344-0.398 0.339-0.441 0.315-0.464 0.273-0.464 0.224-0.464 0.185-0.42 0.17-0.381L0.157-0.453 0.086-0.453C0.091-0.408 0.094-0.377 0.094-0.329L0.094 0 0.171 0 0.171-0.288C0.187-0.325 0.219-0.395 0.262-0.395 0.292-0.395 0.294-0.369 0.294-0.363L0.347-0.371Z" fill="currentColor" fill-rule="nonzero"/></g><g transform="matrix(54 0 0 54 467.431 163.063)"><path d="M0.474-0.226C0.474-0.373 0.39-0.465 0.263-0.465 0.119-0.465 0.042-0.359 0.042-0.226 0.042-0.08 0.126 0.013 0.252 0.013 0.389 0.013 0.474-0.086 0.474-0.226ZM0.39-0.24C0.391-0.233 0.391-0.226 0.391-0.219 0.391-0.141 0.351-0.09 0.34-0.079 0.33-0.069 0.293-0.054 0.262-0.054 0.202-0.054 0.125-0.087 0.125-0.231 0.125-0.309 0.166-0.364 0.176-0.374 0.185-0.383 0.217-0.399 0.253-0.399 0.322-0.399 0.38-0.365 0.39-0.24Z" fill="currentColor" fill-rule="nonzero"/></g><g transform="matrix(54 0 0 54 495.295 163.063)"><path d="M0.456 0C0.451-0.045 0.448-0.08 0.448-0.125L0.448-0.73 0.371-0.73 0.371-0.45C0.335-0.46 0.314-0.465 0.272-0.465 0.131-0.465 0.042-0.377 0.042-0.224 0.042-0.081 0.127 0.013 0.235 0.013 0.295 0.013 0.331-0.006 0.376-0.054 0.378-0.037 0.381-0.017 0.385 0L0.456 0ZM0.371-0.133C0.344-0.094 0.301-0.054 0.247-0.054 0.197-0.054 0.126-0.11 0.126-0.231 0.126-0.32 0.17-0.373 0.182-0.384 0.193-0.394 0.235-0.399 0.265-0.399 0.348-0.399 0.371-0.389 0.371-0.315L0.371-0.133Z" fill="currentColor" fill-rule="nonzero"/></g><g transform="matrix(54 0 0 54 524.239 163.063)"><path d="M0.462 0C0.456-0.041 0.454-0.084 0.454-0.125L0.454-0.453 0.377-0.453 0.377-0.152C0.369-0.133 0.34-0.094 0.314-0.072 0.289-0.06 0.262-0.054 0.234-0.054 0.164-0.054 0.159-0.104 0.159-0.16L0.159-0.453 0.082-0.453 0.082-0.106C0.082-0.015 0.146 0.013 0.227 0.013 0.3 0.013 0.337-0.007 0.38-0.066L0.392 0 0.462 0Z" fill="currentColor" fill-rule="nonzero"/></g><g transform="matrix(54 0 0 54 553.615 163.063)"><path d="M0.452 0 0.248-0.251 0.442-0.453 0.339-0.453 0.159-0.261 0.159-0.73 0.082-0.73 0.082 0 0.159 0 0.159-0.205 0.19-0.205 0.357 0 0.452 0Z" fill="currentColor" fill-rule="nonzero"/></g><g transform="matrix(54 0 0 54 578.293 163.063)"><path d="M0.287-0.016 0.281-0.08C0.258-0.07 0.236-0.054 0.214-0.054 0.18-0.054 0.167-0.076 0.167-0.125L0.167-0.393 0.286-0.393 0.286-0.453 0.167-0.453 0.167-0.606 0.092-0.606 0.092-0.452 0.01-0.452 0.01-0.392 0.092-0.392 0.092-0.1C0.092-0.021 0.136 0.013 0.19 0.013 0.224 0.013 0.263-0.001 0.287-0.016Z" fill="currentColor" fill-rule="nonzero"/></g><g transform="matrix(54 0 0 54 594.979 163.063)"><path d="M0.176-0.619C0.176-0.647 0.152-0.673 0.124-0.673 0.098-0.673 0.075-0.647 0.075-0.619 0.075-0.59 0.098-0.562 0.124-0.562 0.152-0.562 0.176-0.591 0.176-0.619ZM0.164 0 0.164-0.453 0.087-0.453 0.087 0 0.164 0Z" fill="currentColor" fill-rule="nonzero"/></g><g transform="matrix(54 0 0 54 608.533 163.063)"><path d="M0.474-0.226C0.474-0.373 0.39-0.465 0.263-0.465 0.119-0.465 0.042-0.359 0.042-0.226 0.042-0.08 0.126 0.013 0.252 0.013 0.389 0.013 0.474-0.086 0.474-0.226ZM0.39-0.24C0.391-0.233 0.391-0.226 0.391-0.219 0.391-0.141 0.351-0.09 0.34-0.079 0.33-0.069 0.293-0.054 0.262-0.054 0.202-0.054 0.125-0.087 0.125-0.231 0.125-0.309 0.166-0.364 0.176-0.374 0.185-0.383 0.217-0.399 0.253-0.399 0.322-0.399 0.38-0.365 0.39-0.24Z" fill="currentColor" fill-rule="nonzero"/></g><g transform="matrix(54 0 0 54 636.397 163.063)"><path d="M0.469-0.211C0.469-0.256 0.469-0.301 0.465-0.346 0.458-0.439 0.402-0.465 0.321-0.465 0.252-0.465 0.207-0.431 0.169-0.386L0.157-0.453 0.086-0.453C0.09-0.417 0.094-0.379 0.094-0.327L0.094 0 0.171 0 0.171-0.304C0.193-0.334 0.235-0.378 0.246-0.384 0.253-0.388 0.288-0.396 0.314-0.396 0.381-0.396 0.387-0.361 0.391-0.292 0.392-0.274 0.392-0.255 0.392-0.238L0.392-0.196C0.392-0.129 0.392-0.102 0.39 0L0.466 0C0.469-0.103 0.469-0.139 0.469-0.211Z" fill="currentColor" fill-rule="nonzero"/></g></g></g></g></svg>
+  <p class="kicker">OMAI · Task 1</p>
+  <h1 class="title">Allocation planning at AIP&nbsp;Inc.</h1>
+</header>
+
+<main class="wrap layout">
+  <section class="task" aria-label="The case">
+    <p class="lead">AIP Inc. builds five battery-electric models in five European plants. Today every plant builds exactly one model. Evaluate allocation proposals for the next planning year with the allocation planning model from the lecture.</p>
+    <p>Set product–plant links, enter production quantities and check them against the constraints of the model. Choose the scenario and the efficiency loss factor <span class="v">A</span> below. All quantities are in thousand vehicles per year.</p>
+    <ol class="rules">
+      <span class="rules-title">Rules of the case</span>
+      <li>The current links stay in place and cannot be removed.</li>
+      <li>Every link that is set up counts as an allocation (<span class="v">f<sub>ij</sub></span> = 1), even if nothing is produced on it. Each additional link of a plant reduces its capacity by <span class="v">A</span> · <span class="v">U<sub>j</sub></span>.</li>
+      <li>Production quantities are whole numbers of thousand vehicles.</li>
+    </ol>
+  </section>
+
+  <section class="setup" aria-labelledby="setup-h">
+    <h2 id="setup-h">Scenario and parameters</h2>
+    <div class="setup-row">
+      <div class="scen" role="group" aria-label="Scenario" id="scen"></div>
+      <label class="param"><span>Efficiency loss factor <span class="v">A</span></span>
+        <span class="param-in"><input id="a-in" type="number" min="0" max="100" step="0.5" inputmode="decimal"> %</span>
+      </label>
+    </div>
+    <p class="scen-desc" id="scen-desc"></p>
+  </section>
+
+  <div class="side">
+    <section class="panel" id="panel" aria-labelledby="panel-h">
+      <div class="panel-head"><h2 id="panel-h">Results</h2><p class="panel-scen" id="panel-scen"></p></div>
+      <div class="figures">
+        <div class="fig">
+          <span class="fig-label">Total production quantity</span>
+          <span class="fig-value"><span id="tot">0</span><span class="unit" style="font-size:.875rem;font-weight:400;color:var(--ink-3);margin-left:4px">thousand</span></span>
+        </div>
+        <p class="status" id="status" data-state="empty" aria-live="polite">
+          <span class="status-icon" id="status-icon" aria-hidden="true"></span>
+          <span><span class="status-short" id="status-short"></span><span class="status-long" id="status-long"></span></span>
+        </p>
+      </div>
+      <ul class="issues" id="issues"></ul>
+      <p class="plants-label short">Used / effective capacity per plant</p>
+      <div class="plants" id="plants"></div>
+      <p class="panel-note">Effective capacity = <span class="v">U<sub>j</sub></span> − <span class="v">p<sub>j</sub></span> · <span class="v">A</span> · <span class="v">U<sub>j</sub></span>, with <span class="v">p<sub>j</sub></span> = additional links of plant <span class="v">j</span>.</p>
+    </section>
+
+    <section class="opt" id="opt" aria-labelledby="opt-h">
+      <h2 id="opt-h">Optimizer</h2>
+      <p class="hint">Solves the model from the lecture for the selected scenario and <span class="v">A</span>.</p>
+      <p class="opt-lock"><svg viewBox="0 0 14 14" aria-hidden="true"><rect x="2.5" y="6.2" width="9" height="6.3" rx="1.4" fill="currentColor"/><path d="M4.6 6.2V4.4a2.4 2.4 0 0 1 4.8 0v1.8" fill="none" stroke="currentColor" stroke-width="1.5"/></svg><span>Enter a feasible production plan yourself first. The optimizer then unlocks.</span></p>
+      <div class="opt-grid">
+        <button type="button" class="btn" id="opt-q">Optimize quantities for my links</button>
+        <button type="button" class="btn btn-primary" id="opt-all">Optimize links and quantities</button>
+        <label class="opt-k">Max. additional links <span class="v">K</span> <input id="opt-k" type="number" min="0" max="12" step="1" inputmode="numeric" placeholder="no limit"></label>
+      </div>
+      <p class="opt-msg" id="opt-msg" role="status" aria-live="polite"></p>
+    </section>
+
+    <div class="actions" id="actions">
+      <button type="button" class="btn btn-primary" id="save">Save plan</button>
+      <button type="button" class="btn" id="share">Copy link</button>
+      <button type="button" class="btn" id="reset">Reset</button>
+      <p class="toast" id="toast" role="status" aria-live="polite"></p>
+    </div>
+
+    <section class="attempts" aria-labelledby="attempts-h">
+      <div class="attempts-head">
+        <h2 id="attempts-h">Saved plans</h2>
+        <button type="button" class="link-btn" id="clear-attempts" hidden>Delete all</button>
+      </div>
+      <p class="empty" id="attempts-empty">No plans saved yet. Save a plan to compare it with others later.</p>
+      <ol class="attempt-list" id="attempt-list"></ol>
+    </section>
+  </div>
+
+  <section class="plan" id="plan" data-mode="alloc" aria-labelledby="plan-h">
+    <div class="plan-head">
+      <div>
+        <h2 id="plan-h">Decisions</h2>
+        <p class="hint" id="hint"></p>
+      </div>
+      <div class="modes" role="group" aria-label="Decision to edit">
+        <button type="button" class="mode-btn" data-mode="alloc" aria-pressed="true"><span class="step">1</span>Links <span class="v">f<sub>ij</sub></span></button>
+        <button type="button" class="mode-btn" data-mode="prod" aria-pressed="false"><span class="step">2</span>Quantities <span class="v">x<sub>ij</sub></span></button>
+      </div>
+      <div class="legend" aria-hidden="true">
+        <span><i class="key key-init"></i>Current link (fixed)</span>
+        <span><i class="key key-new"></i>Additional link</span>
+        <span class="only-alloc"><i class="key key-off"></i>No link</span>
+        <span><i class="key key-na"></i><span>Not possible (<span class="v">C<sub>ij</sub></span> = 0)</span></span>
+      </div>
+    </div>
+    <div class="cols" aria-hidden="true"><span>Model</span><span>Plant A</span><span>Plant B</span><span>Plant C</span><span>Plant D</span><span>Plant E</span><span>Produced</span></div>
+    <ul class="rows" id="rows"></ul>
+  </section>
+
+  <section class="data" aria-labelledby="data-h">
+    <h2 id="data-h">Data</h2>
+    <p class="hint" id="data-hint"></p>
+    <div class="tables">
+      <div class="tbl-block">
+        <h3>Models</h3>
+        <div class="tbl-scroll"><table id="tbl-models"></table></div>
+        <p class="tbl-note">Thousand vehicles per year. Red: differs from the base case.</p>
+      </div>
+      <div class="tbl-block">
+        <h3>Plants</h3>
+        <div class="tbl-scroll"><table id="tbl-plants"></table></div>
+      </div>
+      <div class="tbl-block">
+        <h3>Allocation possibilities <span class="v">C<sub>ij</sub></span></h3>
+        <div class="tbl-scroll"><table id="tbl-poss"></table></div>
+        <p class="tbl-note">Shaded: current link.</p>
+      </div>
+    </div>
+    <h3 style="margin-top:20px;font-size:1rem;font-weight:600">Scenarios</h3>
+    <ul class="scen-list" id="scen-list"></ul>
+  </section>
+
+  <section class="model" aria-labelledby="model-h">
+    <h2 id="model-h">Model from the lecture</h2>
+    <p class="hint">The tool checks and optimizes exactly this formulation.</p>
+    <div class="formula" role="list">
+      <span class="no">(O)</span><span class="eq">max Σ<sub>i∈I</sub> Σ<sub>j∈J</sub> <span class="v">x<sub>ij</sub></span></span><span class="for"></span>
+      <span class="no">(1.1)</span><span class="eq"><span class="v">f<sub>ij</sub></span> ≥ <span class="v">x<sub>ij</sub></span> / BigM</span><span class="for">∀ i, j</span>
+      <span class="no">(1.2)</span><span class="eq">Σ<sub>i∈I</sub> <span class="v">f<sub>ij</sub></span> ≤ <span class="v">N<sub>j</sub></span> + <span class="v">p<sub>j</sub></span></span><span class="for">∀ j</span>
+      <span class="no">(2)</span><span class="eq"><span class="v">x<sub>ij</sub></span> ≤ <span class="v">C<sub>ij</sub></span> · BigM</span><span class="for">∀ i, j</span>
+      <span class="no">(3)</span><span class="eq">Σ<sub>j∈J</sub> <span class="v">x<sub>ij</sub></span> ≥ <span class="v">M<sub>i</sub></span></span><span class="for">∀ i</span>
+      <span class="no">(4)</span><span class="eq">Σ<sub>j∈J</sub> <span class="v">x<sub>ij</sub></span> ≤ <span class="v">D<sub>i</sub></span></span><span class="for">∀ i</span>
+      <span class="no">(5)</span><span class="eq">Σ<sub>i∈I</sub> <span class="v">x<sub>ij</sub></span> ≤ <span class="v">U<sub>j</sub></span> − <span class="v">p<sub>j</sub></span> · <span class="v">A</span> · <span class="v">U<sub>j</sub></span></span><span class="for">∀ j</span>
+      <span class="no">(6)</span><span class="eq"><span class="v">x<sub>ij</sub></span> ∈ ℕ<sub>0</sub>; <span class="v">f<sub>ij</sub></span> ∈ {0,1}; <span class="v">p<sub>j</sub></span> ∈ ℕ<sub>0</sub></span><span class="for">∀ i, j</span>
+    </div>
+    <dl class="notation">
+      <dt class="grp">Sets</dt>
+      <dt>i ∈ I</dt><dd>models (City, Compact, Sedan, SUV, Van)</dd>
+      <dt>j ∈ J</dt><dd>plants (A, B, C, D, E)</dd>
+      <dt class="grp">Parameters</dt>
+      <dt>U<sub>j</sub></dt><dd>initial capacity of plant j</dd>
+      <dt>N<sub>j</sub></dt><dd>initial number of models of plant j (here 1 for every plant)</dd>
+      <dt>A</dt><dd>relative efficiency loss per additional link</dd>
+      <dt>C<sub>ij</sub></dt><dd>1, if model i can be produced in plant j; 0, else</dd>
+      <dt>D<sub>i</sub>, M<sub>i</sub></dt><dd>forecasted demand and minimum demand fulfilment of model i</dd>
+      <dt class="grp">Decision variables</dt>
+      <dt>x<sub>ij</sub></dt><dd>production quantity of model i in plant j</dd>
+      <dt>f<sub>ij</sub></dt><dd>1, if model i is allocated to plant j (link)</dd>
+      <dt>p<sub>j</sub></dt><dd>number of additional links of plant j</dd>
+    </dl>
+  </section>
+</main>
+
+<footer class="foot wrap">
+  <p>Your plans are stored only in this browser. Use “Copy link” to share a plan. The optimizer evaluates every allowed set of additional links and solves the production quantities exactly; if several sets reach the same production, it shows one with the fewest additional links.</p>
+  <p>Task 1, Operations Management in the Automotive Industry (OMAI), Institut für Automobilwirtschaft und Industrielle Produktion (AIP), TU Braunschweig.</p>
+</footer>
+
+<script>
+(function () {
+  'use strict';
+
+  /* ================= Case data (thousand vehicles per year) ================= */
+  var MODELS = ['City', 'Compact', 'Sedan', 'SUV', 'Van'];          // i
+  var PLANTS = ['A', 'B', 'C', 'D', 'E'];                             // j
+  var N = [1, 1, 1, 1, 1];                                            // N_j
+  var INIT = [                                                        // current links, rows = models, columns = plants
+    [1, 0, 0, 0, 0],
+    [0, 1, 0, 0, 0],
+    [0, 0, 1, 0, 0],
+    [0, 0, 0, 1, 0],
+    [0, 0, 0, 0, 1]
+  ];
+  var POSS = [                                                        // C_ij
+    [1, 1, 1, 0, 1],
+    [1, 1, 1, 1, 0],
+    [0, 1, 1, 1, 0],
+    [0, 0, 1, 1, 1],
+    [0, 0, 1, 1, 1]
+  ];
+  var SCEN = {
+    base: { name: 'Base case', short: 'Base case',
+      D: [200, 240, 130, 220, 90], M: [140, 170, 90, 150, 60], U: [240, 200, 160, 180, 120],
+      desc: '<b>Base case:</b> sales forecast for the planning year.' },
+    s1: { name: 'S1 · Van boom', short: 'S1 Van boom',
+      D: [200, 240, 130, 200, 140], M: [140, 170, 90, 140, 115], U: [240, 200, 160, 180, 120],
+      desc: '<b>S1 · Van boom:</b> fleet customers electrify their vans. Van demand rises to 140 (minimum 115), SUV demand falls to 200 (minimum 140).' },
+    s2: { name: 'S2 · Supplier shortage', short: 'S2 Shortage',
+      D: [200, 240, 130, 220, 90], M: [140, 170, 90, 150, 60], U: [240, 140, 160, 180, 120],
+      desc: '<b>S2 · Supplier shortage:</b> a supplier of plant B cannot deliver enough parts. Plant B can build only 140. Demand as in the base case.' }
+  };
+  var SCEN_KEYS = ['base', 's1', 's2'];
+  var A_DEFAULT = 5;                                                  // percent
+  var STORE_KEY = 'aip-omai-task1-v1';
+  var MAX_Q = 2000;
+
+  var NI = MODELS.length, NJ = PLANTS.length;
+  var OPTIONAL = [];                                                  // links that may be added
+  for (var oi = 0; oi < NI; oi++) for (var oj = 0; oj < NJ; oj++) if (POSS[oi][oj] && !INIT[oi][oj]) OPTIONAL.push([oi, oj]);
+
+  /* ================= State ================= */
+  var f, x, scen = 'base', aPct = A_DEFAULT, mode = 'alloc', unlocked = false;
+  var attempts = [], nextNo = 1;
+
+  var $ = function (id) { return document.getElementById(id); };
+  var els = {
+    scen: $('scen'), aIn: $('a-in'), scenDesc: $('scen-desc'), panelScen: $('panel-scen'),
+    tot: $('tot'), status: $('status'), statusIcon: $('status-icon'), statusShort: $('status-short'), statusLong: $('status-long'),
+    issues: $('issues'), plants: $('plants'), plan: $('plan'), hint: $('hint'), rows: $('rows'),
+    opt: $('opt'), optQ: $('opt-q'), optAll: $('opt-all'), optK: $('opt-k'), optMsg: $('opt-msg'),
+    save: $('save'), share: $('share'), reset: $('reset'), toast: $('toast'), actions: $('actions'),
+    list: $('attempt-list'), empty: $('attempts-empty'), clearAttempts: $('clear-attempts'), dataHint: $('data-hint')
+  };
+
+  var ICON_CHECK = '<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2.2 6.3l2.4 2.4 5.2-5.4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  var ICON_PLUS = '<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M6 2.2v7.6M2.2 6h7.6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>';
+  var ICON_ALERT = '<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M6 2.2v4.6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="6" cy="9.6" r="1.1" fill="currentColor"/></svg>';
+  var ICON_EMPTY = '<svg viewBox="0 0 12 12" aria-hidden="true"><circle cx="6" cy="6" r="3.4" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>';
+  var ICON_UP = '<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M6 9.6V2.6M3 5.4l3-3 3 3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  var ICON_DOWN = '<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M6 2.4v7M3 6.6l3 3 3-3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  var ICON_LOCK = '<svg viewBox="0 0 14 14" aria-hidden="true"><rect x="2.5" y="6.2" width="9" height="6.3" rx="1.4" fill="currentColor"/><path d="M4.6 6.2V4.4a2.4 2.4 0 0 1 4.8 0v1.8" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>';
+
+  /* ================= Helpers ================= */
+  function matrix(v) { return MODELS.map(function () { return PLANTS.map(function () { return v; }); }); }
+  function copy(m) { return m.map(function (r) { return r.slice(); }); }
+  function same(a, b) { for (var i = 0; i < NI; i++) for (var j = 0; j < NJ; j++) if (a[i][j] !== b[i][j]) return false; return true; }
+  function num(v) { return (Math.round(v * 10) / 10).toLocaleString('en-US', { maximumFractionDigits: 1 }); }
+  function plural(n, one, many) { return n + ' ' + (n === 1 ? one : many); }
+  function linkName(i, j) { return MODELS[i] + '–' + PLANTS[j]; }
+  function A() { return aPct / 100; }
+  var toastTimer = null;
+  function say(msg) { els.toast.textContent = msg; clearTimeout(toastTimer); toastTimer = setTimeout(function () { els.toast.textContent = ''; }, 4500); }
+
+  /* ================= Model ================= */
+  function effCaps(sc, a, F) {
+    var out = [];
+    for (var j = 0; j < NJ; j++) {
+      var links = 0;
+      for (var i = 0; i < NI; i++) links += F[i][j];
+      var p = Math.max(0, links - N[j]);                                       // (1.2)
+      out.push({ links: links, p: p, cap: sc.U[j] - p * a * sc.U[j] });         // (5)
+    }
+    return out;
+  }
+
+  function evaluate(scKey, a, F, X) {
+    var sc = SCEN[scKey], caps = effCaps(sc, a, F);
+    var r = { caps: caps, used: [], prod: [], total: 0, issues: [], extra: 0 };
+    for (var i = 0; i < NI; i++) for (var j = 0; j < NJ; j++) if (F[i][j] && !INIT[i][j]) r.extra++;
+    for (var j2 = 0; j2 < NJ; j2++) { var u = 0; for (var i2 = 0; i2 < NI; i2++) u += X[i2][j2]; r.used.push(u); r.total += u; }
+    for (var i3 = 0; i3 < NI; i3++) {
+      var s = 0; for (var j3 = 0; j3 < NJ; j3++) s += X[i3][j3];
+      r.prod.push(s);
+      if (s < sc.M[i3]) r.issues.push({ c: '(3)', t: MODELS[i3] + ': ' + s + ' is below the minimum fulfilment of ' + sc.M[i3] + '.' });
+      if (s > sc.D[i3]) r.issues.push({ c: '(4)', t: MODELS[i3] + ': ' + s + ' is above the demand of ' + sc.D[i3] + '.' });
+    }
+    for (var j4 = 0; j4 < NJ; j4++) {
+      if (r.used[j4] > caps[j4].cap + 1e-9) r.issues.push({ c: '(5)', t: 'Plant ' + PLANTS[j4] + ': ' + r.used[j4] + ' is above the effective capacity of ' + num(caps[j4].cap) + '.' });
+    }
+    r.feasible = r.issues.length === 0;
+    return r;
+  }
+
+  /* Maximum production for fixed links: max flow with lower bounds M_i (Edmonds–Karp).
+     Integral capacities give integral quantities, as required by (6). */
+  function maxProduction(scKey, a, F) {
+    var sc = SCEN[scKey], caps = effCaps(sc, a, F);
+    var S = 0, T = NI + NJ + 1, V = T + 1, BIG = 1e9;
+    var cap = [], flow = [];
+    for (var u = 0; u < V; u++) { cap.push(new Array(V).fill(0)); flow.push(new Array(V).fill(0)); }
+    for (var j = 0; j < NJ; j++) {
+      if (caps[j].cap < -1e-9) return { feasible: false };
+      cap[1 + NI + j][T] = Math.floor(caps[j].cap + 1e-9);
+    }
+    for (var i = 0; i < NI; i++) {
+      cap[S][1 + i] = SCEN[scKey].M[i];
+      for (var j2 = 0; j2 < NJ; j2++) if (F[i][j2] && POSS[i][j2]) cap[1 + i][1 + NI + j2] = BIG;
+    }
+    function augment() {
+      var total = 0;
+      for (;;) {
+        var prev = new Array(V).fill(-1); prev[S] = S;
+        var queue = [S];
+        while (queue.length && prev[T] === -1) {
+          var v = queue.shift();
+          for (var w = 0; w < V; w++) if (prev[w] === -1 && cap[v][w] - flow[v][w] > 0) { prev[w] = v; queue.push(w); }
+        }
+        if (prev[T] === -1) return total;
+        var d = Infinity;
+        for (var y = T; y !== S; y = prev[y]) d = Math.min(d, cap[prev[y]][y] - flow[prev[y]][y]);
+        for (var z = T; z !== S; z = prev[z]) { flow[prev[z]][z] += d; flow[z][prev[z]] -= d; }
+        total += d;
+      }
+    }
+    var need = 0; for (var k = 0; k < NI; k++) need += sc.M[k];
+    var f1 = augment();
+    if (f1 < need) return { feasible: false };
+    for (var i2 = 0; i2 < NI; i2++) cap[S][1 + i2] = sc.D[i2];        // raise to demand, lower bounds stay met
+    var f2 = augment();
+    var X = matrix(0);
+    for (var i3 = 0; i3 < NI; i3++) for (var j3 = 0; j3 < NJ; j3++) X[i3][j3] = Math.max(0, flow[1 + i3][1 + NI + j3]);
+    return { feasible: true, total: f1 + f2, x: X };
+  }
+
+  function optimizeAll(scKey, a, K) {
+    var n = OPTIONAL.length, best = null;
+    for (var mask = 0; mask < (1 << n); mask++) {
+      var k = 0, F = copy(INIT);
+      for (var b = 0; b < n; b++) if (mask & (1 << b)) { k++; F[OPTIONAL[b][0]][OPTIONAL[b][1]] = 1; }
+      if (K !== null && k > K) continue;
+      var r = maxProduction(scKey, a, F);
+      if (!r.feasible) continue;
+      if (!best || r.total > best.total || (r.total === best.total && k < best.k)) best = { total: r.total, k: k, f: F, x: r.x };
+    }
+    return best;
+  }
+
+  /* ================= Sanitising ================= */
+  function cleanF(m) {
+    var out = copy(INIT);
+    if (!Array.isArray(m)) return out;
+    for (var i = 0; i < NI; i++) for (var j = 0; j < NJ; j++) {
+      var v = m[i] && m[i][j];
+      if (POSS[i][j] && (v === 1 || v === '1' || v === true)) out[i][j] = 1;
+    }
+    return out;
+  }
+  function cleanX(m, F) {
+    var out = matrix(0);
+    if (!Array.isArray(m)) return out;
+    for (var i = 0; i < NI; i++) for (var j = 0; j < NJ; j++) {
+      var v = parseFloat(m[i] && m[i][j]);
+      out[i][j] = F[i][j] && isFinite(v) && v > 0 ? Math.min(Math.round(v), MAX_Q) : 0;
+    }
+    return out;
+  }
+  function cleanA(v) { v = parseFloat(v); return isFinite(v) && v >= 0 && v <= 100 ? Math.round(v * 10) / 10 : A_DEFAULT; }
+
+  /* ================= Storage and link ================= */
+  function loadStore() { try { var raw = localStorage.getItem(STORE_KEY); return raw ? JSON.parse(raw) : null; } catch (e) { return null; } }
+  function saveStore() {
+    try { localStorage.setItem(STORE_KEY, JSON.stringify({ f: f, x: x, scen: scen, a: aPct, mode: mode, unlocked: unlocked, attempts: attempts, nextNo: nextNo })); } catch (e) { /* storage blocked */ }
+  }
+  function isStart() { return same(f, INIT) && same(x, matrix(0)) && scen === 'base' && aPct === A_DEFAULT; }
+  function hashFor() {
+    return '#s=' + scen + '&a=' + aPct + '&f=' + f.map(function (r) { return r.join(''); }).join('.') +
+      '&x=' + x.map(function (r) { return r.map(function (v) { return v ? String(v) : ''; }).join(','); }).join('_');
+  }
+  function writeHash() { try { history.replaceState(null, '', location.pathname + location.search + (isStart() ? '' : hashFor())); } catch (e) { /* ignore */ } }
+  function readHash() {
+    var h = location.hash;
+    var mf = /(?:^#|&)f=([01.]+)/.exec(h);
+    if (!mf) return null;
+    var F = cleanF(mf[1].split('.').map(function (r) { return r.split('').map(Number); }));
+    var mx = /(?:^#|&)x=([0-9,_]*)/.exec(h);
+    var X = mx ? cleanX(mx[1].split('_').map(function (r) { return r.split(','); }), F) : matrix(0);
+    var ms = /(?:^#|&)s=(base|s1|s2)/.exec(h);
+    var ma = /(?:^#|&)a=([0-9.]+)/.exec(h);
+    return { f: F, x: X, scen: ms ? ms[1] : 'base', a: ma ? cleanA(ma[1]) : A_DEFAULT };
+  }
+
+  /* ================= Build static parts ================= */
+  var cells = [], rowEls = [], plantEls = [];
+
+  function buildScenButtons() {
+    SCEN_KEYS.forEach(function (k) {
+      var b = document.createElement('button');
+      b.type = 'button'; b.className = 'scen-btn'; b.dataset.scen = k; b.textContent = SCEN[k].name;
+      els.scen.appendChild(b);
+    });
+  }
+
+  function buildRows() {
+    for (var i = 0; i < NI; i++) cells.push([]);
+    MODELS.forEach(function (mo, i) {
+      var li = document.createElement('li');
+      li.className = 'mrow';
+      li.innerHTML = '<div class="m-head"><span class="m-name">' + mo + '</span><span class="m-dem"></span></div>';
+      for (var j = 0; j < NJ; j++) {
+        var c = document.createElement('div');
+        c.className = 'cell'; c.style.gridArea = 'c' + j;
+        li.appendChild(c); cells[i][j] = c;
+      }
+      var sum = document.createElement('div');
+      sum.className = 'm-sum';
+      sum.innerHTML = '<span class="m-icon" aria-hidden="true"></span>' +
+        '<div class="m-meter"><div class="m-track" aria-hidden="true"><span class="m-zone"></span><span class="m-fill"></span><span class="m-min"></span></div><div class="m-note"></div></div>' +
+        '<span class="m-val"></span>';
+      li.appendChild(sum);
+      rowEls.push({ li: li, dem: li.querySelector('.m-dem'), icon: sum.querySelector('.m-icon'), zone: sum.querySelector('.m-zone'),
+        fill: sum.querySelector('.m-fill'), min: sum.querySelector('.m-min'), note: sum.querySelector('.m-note'), val: sum.querySelector('.m-val') });
+      els.rows.appendChild(li);
+    });
+  }
+
+  function buildPlants() {
+    PLANTS.forEach(function (p) {
+      var d = document.createElement('div');
+      d.className = 'plant';
+      d.innerHTML = '<div class="pl-top"><span class="pl-name"><span class="long">Plant </span>' + p + '</span><span class="pl-num"></span></div>' +
+        '<div class="pl-track"><span class="pl-fill"></span><span class="pl-cap"></span></div><div class="pl-sub"></div>';
+      els.plants.appendChild(d);
+      plantEls.push({ el: d, num: d.querySelector('.pl-num'), fill: d.querySelector('.pl-fill'), cap: d.querySelector('.pl-cap'), sub: d.querySelector('.pl-sub') });
+    });
+  }
+
+  function buildStaticTables() {
+    var h = '<thead><tr><th scope="col">Model</th>';
+    PLANTS.forEach(function (p) { h += '<th scope="col">' + p + '</th>'; });
+    h += '</tr></thead><tbody>';
+    MODELS.forEach(function (mo, i) {
+      h += '<tr><th scope="row">' + mo + '</th>';
+      PLANTS.forEach(function (p, j) { h += '<td class="' + (INIT[i][j] ? 'init' : (POSS[i][j] ? '' : 'zero')) + '">' + POSS[i][j] + '</td>'; });
+      h += '</tr>';
+    });
+    $('tbl-poss').innerHTML = h + '</tbody>';
+    $('scen-list').innerHTML = SCEN_KEYS.map(function (k) { return '<li>' + SCEN[k].desc + '</li>'; }).join('');
+  }
+
+  function renderTables() {
+    var sc = SCEN[scen], b = SCEN.base;
+    var h = '<thead><tr><th scope="col">Model</th><th scope="col">Demand <span class="v">D<sub>i</sub></span></th><th scope="col">Minimum <span class="v">M<sub>i</sub></span></th><th scope="col">Current plant</th></tr></thead><tbody>';
+    MODELS.forEach(function (mo, i) {
+      var cur = PLANTS.filter(function (p, j) { return INIT[i][j]; }).join(', ');
+      h += '<tr><th scope="row">' + mo + '</th><td class="' + (sc.D[i] !== b.D[i] ? 'changed' : '') + '">' + sc.D[i] + '</td><td class="' +
+        (sc.M[i] !== b.M[i] ? 'changed' : '') + '">' + sc.M[i] + '</td><td>' + cur + '</td></tr>';
+    });
+    var dS = sc.D.reduce(function (s, v) { return s + v; }, 0), mS = sc.M.reduce(function (s, v) { return s + v; }, 0);
+    $('tbl-models').innerHTML = h + '<tr><th scope="row">Sum</th><td>' + dS + '</td><td>' + mS + '</td><td></td></tr></tbody>';
+    var p = '<thead><tr><th scope="col">Plant</th><th scope="col">Capacity <span class="v">U<sub>j</sub></span></th><th scope="col"><span class="v">N<sub>j</sub></span></th><th scope="col">Current model</th></tr></thead><tbody>';
+    PLANTS.forEach(function (pl, j) {
+      var cur = MODELS.filter(function (m, i) { return INIT[i][j]; }).join(', ');
+      p += '<tr><th scope="row">' + pl + '</th><td class="' + (sc.U[j] !== b.U[j] ? 'changed' : '') + '">' + sc.U[j] + '</td><td>' + N[j] + '</td><td>' + cur + '</td></tr>';
+    });
+    var uS = sc.U.reduce(function (s, v) { return s + v; }, 0);
+    $('tbl-plants').innerHTML = p + '<tr><th scope="row">Sum</th><td>' + uS + '</td><td></td><td></td></tr></tbody>';
+    els.dataHint.innerHTML = 'Showing <b>' + sc.name + '</b>. Efficiency loss factor <span class="v">A</span> = ' + num(aPct) + ' % per additional link.';
+  }
+
+  /* ================= Cells ================= */
+  function stateOf(i, j) {
+    if (!POSS[i][j]) return 'na';
+    if (INIT[i][j]) return 'init';
+    return f[i][j] ? 'new' : 'off';
+  }
+
+  function renderCell(i, j) {
+    var box = cells[i][j], st = stateOf(i, j);
+    var label = '<span class="c-plant">' + PLANTS[j] + '</span>';
+    box.className = 'cell is-' + st;
+    if (st === 'na') {
+      if (!box.querySelector('.c-na')) box.innerHTML = '<div class="c-na" role="img" aria-label="' + MODELS[i] + ' cannot be produced in plant ' + PLANTS[j] + '">' + label + '<span class="c-text">not possible</span></div>';
+      return;
+    }
+    if (mode === 'alloc') {
+      if (st === 'init') {
+        box.innerHTML = '<div class="c-lock" role="img" aria-label="' + MODELS[i] + ' in plant ' + PLANTS[j] + ': current link, fixed">' + label +
+          '<span class="c-mark" aria-hidden="true">' + ICON_LOCK + '</span><span class="c-tag">current' + (x[i][j] > 0 ? ' · ' + x[i][j] : '') + '</span></div>';
+        return;
+      }
+      var b = box.querySelector('.c-btn');
+      if (!b) {
+        box.innerHTML = '';
+        b = document.createElement('button');
+        b.type = 'button'; b.className = 'c-btn'; b.dataset.i = i; b.dataset.j = j;
+        box.appendChild(b);
+      }
+      var on = f[i][j] === 1;
+      b.setAttribute('aria-pressed', on ? 'true' : 'false');
+      b.setAttribute('aria-label', MODELS[i] + ' in plant ' + PLANTS[j] + ': ' + (on ? 'additional link' : 'no link'));
+      b.innerHTML = label + '<span class="c-mark" aria-hidden="true">' + (on ? ICON_CHECK : ICON_PLUS) + '</span><span class="c-tag">' +
+        (on ? 'additional' + (x[i][j] > 0 ? ' · ' + x[i][j] : '') : 'add') + '</span>';
+      return;
+    }
+    if (f[i][j]) {
+      var inp = box.querySelector('input');
+      if (!inp) {
+        box.innerHTML = '<label class="c-in">' + label + '</label>';
+        inp = document.createElement('input');
+        inp.type = 'number'; inp.min = '0'; inp.step = '1'; inp.inputMode = 'numeric'; inp.placeholder = '0'; inp.autocomplete = 'off';
+        inp.dataset.i = i; inp.dataset.j = j;
+        inp.setAttribute('aria-label', MODELS[i] + ' in plant ' + PLANTS[j] + ', production quantity in thousand vehicles');
+        box.firstChild.appendChild(inp);
+      }
+      if (document.activeElement !== inp) inp.value = x[i][j] ? String(x[i][j]) : '';
+    } else {
+      box.innerHTML = '<div class="c-idle">' + label + '<span class="c-text">no link</span></div>';
+    }
+  }
+  function renderAllCells() { for (var i = 0; i < NI; i++) for (var j = 0; j < NJ; j++) renderCell(i, j); }
+
+  function setMode(m) {
+    mode = m;
+    els.plan.dataset.mode = m;
+    els.plan.querySelectorAll('.mode-btn').forEach(function (b) { b.setAttribute('aria-pressed', b.dataset.mode === m ? 'true' : 'false'); });
+    els.hint.textContent = m === 'alloc'
+      ? 'Tap a cell to set up an additional link, tap again to remove it. Then switch to Quantities.'
+      : 'Enter the production quantity in thousand vehicles. Only cells with a link can produce.';
+    renderAllCells();
+  }
+
+  function setScenario(k) {
+    scen = k;
+    els.scen.querySelectorAll('.scen-btn').forEach(function (b) { b.setAttribute('aria-pressed', b.dataset.scen === k ? 'true' : 'false'); });
+    els.scenDesc.innerHTML = SCEN[k].desc;
+    renderTables();
+  }
+
+  /* ================= Render results ================= */
+  function render() {
+    var sc = SCEN[scen], r = evaluate(scen, A(), f, x), started = r.total > 0;
+    els.tot.textContent = r.total;
+    els.panelScen.textContent = sc.name + ' · A = ' + num(aPct) + ' %';
+
+    plantEls.forEach(function (pe, j) {
+      var c = r.caps[j], used = r.used[j], over = used > c.cap + 1e-9;
+      var scale = Math.max(c.cap, used, 1);
+      pe.el.classList.toggle('is-over', over);
+      pe.num.innerHTML = '<b>' + used + '</b> / ' + num(c.cap);
+      pe.fill.style.width = Math.max(0, used / scale * 100) + '%';
+      pe.cap.style.left = Math.max(0, c.cap / scale * 100) + '%';
+      pe.sub.innerHTML = '<span class="v">p</span> = ' + c.p + (c.p > 0 ? '<span class="long"> · capacity −' + num(c.p * A() * sc.U[j]) + '</span>' : '<span class="long"> · no additional link</span>');
+    });
+
+    MODELS.forEach(function (mo, i) {
+      var re = rowEls[i], v = r.prod[i];
+      var st = !started ? 'idle' : v < sc.M[i] ? 'low' : v > sc.D[i] ? 'high' : 'ok';
+      re.li.classList.remove('is-idle', 'is-low', 'is-ok', 'is-high');
+      re.li.classList.add('is-' + st);
+      re.dem.innerHTML = '<span class="nowrap">min <b>' + sc.M[i] + '</b></span><span class="dot"> · </span><span class="nowrap">demand <b>' + sc.D[i] + '</b></span>';
+      var scale = Math.max(sc.D[i], v, 1);
+      re.zone.style.left = (sc.M[i] / scale * 100) + '%';
+      re.zone.style.width = ((sc.D[i] - sc.M[i]) / scale * 100) + '%';
+      re.min.style.left = (sc.M[i] / scale * 100) + '%';
+      re.fill.style.width = (v / scale * 100) + '%';
+      re.val.innerHTML = '<b>' + v + '</b> / ' + sc.D[i];
+      re.icon.innerHTML = st === 'ok' ? ICON_CHECK : st === 'low' ? ICON_UP : st === 'high' ? ICON_DOWN : ICON_EMPTY;
+      re.note.textContent = st === 'low' ? (sc.M[i] - v) + ' below minimum' : st === 'high' ? (v - sc.D[i]) + ' above demand' : st === 'ok' ? (sc.D[i] - v ? (sc.D[i] - v) + ' short of demand' : 'demand met') : 'not produced yet';
+      re.li.setAttribute('aria-label', mo + ': produced ' + v + ', minimum ' + sc.M[i] + ', demand ' + sc.D[i]);
+    });
+
+    var state, short, long, icon;
+    if (!started) { state = 'empty'; icon = ICON_EMPTY; short = 'No production yet'; long = 'No production planned yet.'; }
+    else if (r.feasible) { state = 'ok'; icon = ICON_CHECK; short = 'Feasible'; long = 'Feasible plan: all constraints are met.'; }
+    else { state = 'bad'; icon = ICON_ALERT; short = plural(r.issues.length, 'violation', 'violations');
+      long = 'Not feasible: ' + plural(r.issues.length, 'constraint is', 'constraints are') + ' violated.'; }
+    els.status.dataset.state = state;
+    els.statusIcon.innerHTML = icon;
+    els.statusShort.textContent = short;
+    els.statusLong.textContent = long;
+    els.issues.innerHTML = '';
+    if (started) r.issues.forEach(function (it) { var li = document.createElement('li'); li.innerHTML = '<b>' + it.c + '</b> ' + it.t; els.issues.appendChild(li); });
+
+    els.opt.classList.toggle('is-open', unlocked);
+    els.optQ.disabled = !unlocked; els.optAll.disabled = !unlocked; els.optK.disabled = !unlocked;
+    els.save.disabled = !started && same(f, INIT);
+    els.reset.disabled = isStart();
+    writeHash();
+    saveStore();
+    return r;
+  }
+
+  function checkUnlock() {
+    if (unlocked) return;
+    var r = evaluate(scen, A(), f, x);
+    if (r.feasible && r.total > 0) { unlocked = true; say('Feasible plan found. The optimizer is now unlocked.'); }
+  }
+
+  /* ================= Saved plans ================= */
+  function renderAttempts() {
+    els.list.innerHTML = '';
+    attempts.slice().reverse().forEach(function (a) {
+      var r = evaluate(a.scen, a.a / 100, a.f, a.x);
+      var li = document.createElement('li');
+      li.className = 'attempt' + (r.feasible ? '' : ' bad');
+      var links = [];
+      for (var i = 0; i < NI; i++) for (var j = 0; j < NJ; j++) if (a.f[i][j] && !INIT[i][j]) links.push(linkName(i, j));
+      li.innerHTML = '<div class="attempt-top"><span class="attempt-name">Plan ' + a.no + (r.feasible ? '' : '<span class="badge bad">Not feasible</span>') + '</span>' +
+        '<span class="attempt-figs"><b>' + r.total + '</b> thousand</span></div>' +
+        '<div class="attempt-info">' + SCEN[a.scen].short + ' · A = ' + num(a.a) + ' % · ' + (links.length ? links.join(', ') : 'no additional links') + '</div>' +
+        '<div class="attempt-actions"><button type="button" class="link-btn" data-act="load" data-no="' + a.no + '">Load</button>' +
+        '<button type="button" class="link-btn" data-act="del" data-no="' + a.no + '">Delete</button></div>';
+      els.list.appendChild(li);
+    });
+    els.empty.hidden = attempts.length > 0;
+    els.clearAttempts.hidden = attempts.length === 0;
+    disarm(els.clearAttempts, 'Delete all');
+  }
+
+  var armTimers = new Map();
+  function arm(btn, text) { btn.classList.add('armed'); btn.textContent = text; clearTimeout(armTimers.get(btn)); armTimers.set(btn, setTimeout(function () { disarm(btn, btn.dataset.label); }, 3500)); }
+  function disarm(btn, text) { clearTimeout(armTimers.get(btn)); btn.classList.remove('armed'); btn.textContent = text; }
+  els.reset.dataset.label = 'Reset';
+  els.clearAttempts.dataset.label = 'Delete all';
+
+  /* ================= Events ================= */
+  els.scen.addEventListener('click', function (e) {
+    var b = e.target.closest('.scen-btn'); if (!b || b.dataset.scen === scen) return;
+    setScenario(b.dataset.scen); els.optMsg.textContent = ''; els.optMsg.className = 'opt-msg'; render();
+  });
+  els.aIn.addEventListener('change', function () {
+    aPct = cleanA(els.aIn.value); els.aIn.value = aPct; renderTables(); els.optMsg.textContent = ''; render();
+  });
+
+  els.plan.addEventListener('click', function (e) {
+    var mb = e.target.closest('.mode-btn');
+    if (mb) { if (mb.dataset.mode !== mode) { setMode(mb.dataset.mode); saveStore(); } return; }
+    var b = e.target.closest('.c-btn'); if (!b) return;
+    var i = +b.dataset.i, j = +b.dataset.j;
+    if (!POSS[i][j] || INIT[i][j]) return;
+    if (f[i][j]) {
+      f[i][j] = 0;
+      if (x[i][j] > 0) { say('Removed the link ' + linkName(i, j) + ' and its quantity of ' + x[i][j] + '.'); x[i][j] = 0; }
+    } else f[i][j] = 1;
+    renderCell(i, j); checkUnlock(); render();
+  });
+
+  els.rows.addEventListener('input', function (e) {
+    var inp = e.target; if (inp.tagName !== 'INPUT') return;
+    var i = +inp.dataset.i, j = +inp.dataset.j, v = parseFloat(inp.value);
+    x[i][j] = isFinite(v) && v > 0 ? Math.min(Math.round(v), MAX_Q) : 0;
+    checkUnlock(); render();
+  });
+  els.rows.addEventListener('change', function (e) {
+    var inp = e.target; if (inp.tagName !== 'INPUT') return;
+    inp.value = x[+inp.dataset.i][+inp.dataset.j] || '';
+  });
+  els.rows.addEventListener('keydown', function (e) {
+    if (e.key !== 'Enter' || e.target.tagName !== 'INPUT') return;
+    var inputs = Array.prototype.slice.call(els.rows.querySelectorAll('input')), k = inputs.indexOf(e.target);
+    if (k > -1 && k < inputs.length - 1) { e.preventDefault(); inputs[k + 1].focus(); inputs[k + 1].select(); }
+  });
+
+  function optMsg(html, bad) { els.optMsg.innerHTML = html; els.optMsg.className = 'opt-msg' + (bad ? ' bad' : ''); }
+  els.optQ.addEventListener('click', function () {
+    var r = maxProduction(scen, A(), f);
+    if (!r.feasible) { optMsg('No production plan satisfies all constraints with these links in ' + SCEN[scen].name + '.', true); return; }
+    x = r.x; renderAllCells(); render();
+    optMsg('Maximum production with your links: <b>' + r.total + '</b> thousand vehicles (' + SCEN[scen].name + ', A = ' + num(aPct) + ' %).');
+  });
+  els.optAll.addEventListener('click', function () {
+    var kv = els.optK.value.trim(), K = kv === '' ? null : Math.max(0, Math.floor(+kv));
+    if (kv !== '' && !isFinite(+kv)) K = null;
+    var best = optimizeAll(scen, A(), K);
+    if (!best) { optMsg('No allocation ' + (K !== null ? 'with at most ' + plural(K, 'additional link', 'additional links') + ' ' : '') + 'allows a feasible plan in ' + SCEN[scen].name + '.', true); return; }
+    f = best.f; x = best.x; renderAllCells(); render();
+    var links = [];
+    for (var i = 0; i < NI; i++) for (var j = 0; j < NJ; j++) if (f[i][j] && !INIT[i][j]) links.push(linkName(i, j));
+    optMsg('Optimal production' + (K !== null ? ' with at most ' + plural(K, 'additional link', 'additional links') : '') + ': <b>' + best.total + '</b> thousand vehicles with ' +
+      plural(best.k, 'additional link', 'additional links') + (links.length ? ' (' + links.join(', ') + ')' : '') + '.');
+  });
+
+  els.save.addEventListener('click', function () {
+    for (var k = 0; k < attempts.length; k++) {
+      var t = attempts[k];
+      if (t.scen === scen && t.a === aPct && same(t.f, f) && same(t.x, x)) { say('This plan is already saved as Plan ' + t.no + '.'); return; }
+    }
+    attempts.push({ no: nextNo, scen: scen, a: aPct, f: copy(f), x: copy(x) });
+    say('Saved as Plan ' + nextNo + '.'); nextNo++;
+    renderAttempts(); saveStore();
+  });
+
+  els.reset.addEventListener('click', function () {
+    if (!els.reset.classList.contains('armed')) { arm(els.reset, 'Tap again to reset'); return; }
+    disarm(els.reset, 'Reset');
+    f = copy(INIT); x = matrix(0); aPct = A_DEFAULT; els.aIn.value = aPct;
+    setScenario('base'); renderAllCells(); optMsg(''); render();
+    say('Back to the current allocation in the base case, with no production.');
+  });
+
+  els.share.addEventListener('click', function () {
+    writeHash();
+    var url = location.href;
+    var done = function () { say('Link copied. It opens with this plan.'); };
+    var fallback = function () {
+      var old = els.actions.querySelector('.share-field'); if (old) old.remove();
+      var fld = document.createElement('input');
+      fld.className = 'share-field'; fld.readOnly = true; fld.value = url; fld.setAttribute('aria-label', 'Link to this plan');
+      els.actions.appendChild(fld); fld.focus(); fld.select(); say('Copy the link below.');
+    };
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(url).then(done, fallback); else fallback();
+  });
+
+  els.list.addEventListener('click', function (e) {
+    var b = e.target.closest('button[data-act]'); if (!b) return;
+    var no = +b.dataset.no, a = attempts.filter(function (t) { return t.no === no; })[0]; if (!a) return;
+    if (b.dataset.act === 'load') {
+      f = copy(a.f); x = copy(a.x); aPct = a.a; els.aIn.value = aPct; setScenario(a.scen);
+      renderAllCells(); optMsg(''); render(); say('Plan ' + no + ' loaded.');
+    } else {
+      attempts = attempts.filter(function (t) { return t.no !== no; }); renderAttempts(); saveStore(); say('Plan ' + no + ' deleted.');
+    }
+  });
+  els.clearAttempts.addEventListener('click', function () {
+    if (!els.clearAttempts.classList.contains('armed')) { arm(els.clearAttempts, 'Tap again to delete all'); return; }
+    attempts = []; nextNo = 1; renderAttempts(); saveStore(); say('All plans deleted.');
+  });
+
+  window.addEventListener('hashchange', function () {
+    var h = readHash(); if (!h) return;
+    f = h.f; x = h.x; aPct = h.a; els.aIn.value = aPct; setScenario(h.scen); renderAllCells(); render();
+  });
+
+  /* ================= Start ================= */
+  f = copy(INIT); x = matrix(0);
+  var stored = loadStore();
+  if (stored) {
+    if (Array.isArray(stored.attempts)) attempts = stored.attempts.filter(function (a) { return a && +a.no > 0 && SCEN[a.scen]; }).map(function (a) {
+      var F = cleanF(a.f); return { no: +a.no, scen: a.scen, a: cleanA(a.a), f: F, x: cleanX(a.x, F) };
+    });
+    nextNo = Math.max(+stored.nextNo || 1, attempts.reduce(function (m, a) { return Math.max(m, a.no + 1); }, 1));
+    if (stored.f) { f = cleanF(stored.f); x = cleanX(stored.x, f); }
+    if (SCEN[stored.scen]) scen = stored.scen;
+    if (stored.a !== undefined) aPct = cleanA(stored.a);
+    if (stored.mode === 'prod') mode = 'prod';
+    unlocked = stored.unlocked === true;
+  }
+  var fromHash = readHash();
+  if (fromHash) { f = fromHash.f; x = fromHash.x; scen = fromHash.scen; aPct = fromHash.a; }
+
+  els.aIn.value = aPct;
+  buildScenButtons(); buildRows(); buildPlants(); buildStaticTables();
+  setScenario(scen); setMode(mode); renderAttempts(); render();
+
+  // for automated checks of the solution values
+  window.AIPTask = { evaluate: evaluate, maxProduction: maxProduction, optimizeAll: optimizeAll, INIT: INIT, matrix: matrix, copy: copy };
+})();
+</script>
+</body>
+</html>
